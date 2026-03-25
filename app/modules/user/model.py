@@ -14,6 +14,7 @@ class User(SQLModel, table=True):
     passwordHash: Optional[str] = Field(default=None, nullable=True)
     emailVerified: bool = Field(default=False)
     image: Optional[str] = Field(default=None, nullable=True)
+    profile: str = Field(default="user")
     active: bool = Field(default=True)
     createdAt: Optional[datetime] = Field(
         default=None,

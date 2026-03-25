@@ -11,12 +11,14 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     image: Optional[str] = None
+    profile: Optional[str] = "user"
     active: bool
 
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None
     image: Optional[str] = None
+    profile: Optional[str] = None
     active: Optional[bool] = None
 
 
@@ -28,6 +30,7 @@ class UserResponse(BaseModel):
     emailVerified: bool
     image: Optional[str]
     createdAt: datetime
+    profile: str
     active: bool
 
     class Config:
