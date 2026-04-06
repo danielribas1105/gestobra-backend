@@ -1,8 +1,12 @@
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import TYPE_CHECKING, List, Optional
 from sqlalchemy import Column, DateTime, func
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
+
+if TYPE_CHECKING:
+    from app.modules.car.model import Car
+    from app.modules.jobs.model import Job
 
 
 class User(SQLModel, table=True):
@@ -11,16 +15,22 @@ class User(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     name: str
     email: str = Field(unique=True, index=True)
-    passwordHash: Optional[str] = Field(default=None, nullable=True)
-    emailVerified: bool = Field(default=False)
+    password_hash: Optional[str] = Field(default=None, nullable=True)
+    email_verified: bool = Field(default=False)
     image: Optional[str] = Field(default=None, nullable=True)
     profile: str = Field(default="user")
     active: bool = Field(default=True)
-    createdAt: Optional[datetime] = Field(
+    created_at: Optional[datetime] = Field(
         default=None,
         sa_column=Column(DateTime(timezone=True), server_default=func.now()),
     )
-    updatedAt: Optional[datetime] = Field(
+    updated_at: Optional[datetime] = Field(
         default=None,
         sa_column=Column(DateTime(timezone=True), onupdate=func.now()),
+    )
+
+    # Relationship
+    created_jobs: List["Job"] = Relationship(
+        back_populates="creator",
+        sa_relationship_kwargs={"foreign_keys": "[Job.created_by]"},
     )
