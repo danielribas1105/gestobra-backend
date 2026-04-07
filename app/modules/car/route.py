@@ -6,7 +6,7 @@ from app.modules.car.schema import CarCreate, CarResponse
 from app.modules.car import service
 from app.modules.user.model import User
 
-router = APIRouter(prefix="/cars", tags=["cars"])
+router = APIRouter(prefix="/cars", tags=["Cars"])
 
 
 @router.get("/", response_model=list[CarResponse])

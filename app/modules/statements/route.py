@@ -6,7 +6,7 @@ from app.modules.user.model import User
 from app.modules.statements.schema import StatementCreate, StatementResponse
 from app.modules.statements import service
 
-router = APIRouter(prefix="/statements", tags=["statements"])
+router = APIRouter(prefix="/statements", tags=["Statements"])
 
 
 @router.get("/", response_model=list[StatementResponse])

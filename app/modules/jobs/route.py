@@ -4,7 +4,7 @@ from sqlmodel import select
 from app.db.database import get_db
 from app.modules.jobs.model import Job
 
-router = APIRouter(prefix="/job", tags=["jobs"])
+router = APIRouter(prefix="/job", tags=["Jobs"])
 
 
 @router.post("/")

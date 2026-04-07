@@ -1,8 +1,8 @@
 import uuid
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
-class WorkBase(BaseModel):
+class WorkCreate(BaseModel):
     name: str
     description: str | None = None
     address: str | None = None
@@ -14,12 +14,16 @@ class WorkBase(BaseModel):
     image_url: str | None = None
 
 
-class WorkCreate(WorkBase):
-    pass
-
-
-class WorkOut(WorkBase):
+class WorkResponse(BaseModel):
     id: uuid.UUID
+    name: str
+    description: str | None = None
+    address: str | None = None
+    region: str | None = None
+    city: str | None = None
+    state: str | None = None
+    budget: str | None = None
+    status: str
+    image_url: str | None = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
