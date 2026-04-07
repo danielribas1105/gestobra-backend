@@ -1,14 +1,26 @@
-from sqlalchemy.orm import Session
-from . import model, schema
+import uuid
+
+from fastapi_async_sqlalchemy import db
+from sqlalchemy import select
+from app.modules.jobs.model import Job
+from app.modules.jobs.schema import JobCreate
 
 
-def create_job(db: Session, job: schema.JobCreate):
-    db_job = model.Job(**job.dict())
-    db.add(db_job)
-    db.commit()
-    db.refresh(db_job)
-    return db_job
+async def list_jobs(offset: int = 0, limit: int = 20) -> list[Job]:
+    result = await db.session.execute(select(Job).offset(offset).limit(limit))
+    return result.scalars().all()
 
 
-def list_jobs(db: Session):
-    return db.query(model.Job).all()
+async def create_job(data: JobCreate) -> Job:
+    job = Job(**data.model_dump())
+    db.session.add(job)
+    await db.session.commit()
+    await db.session.refresh(job)
+    return job
+
+
+async def get_job_by_id(job_id: uuid.UUID) -> Job | None:
+    result = await db.session.execute(select(Job).where(Job.id == job_id))
+    job = result.scalars().first()
+
+    return job

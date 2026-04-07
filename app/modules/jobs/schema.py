@@ -1,22 +1,26 @@
+from datetime import datetime
 import uuid
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
-class JobBase(BaseModel):
-    created_at: str
-    updated_at: str
-    origin: str
-    destiny: str
-    car_id: str
-    user_id: str
+
+class JobCreate(BaseModel):
+    origin: uuid.UUID
+    destiny: uuid.UUID
+    car_id: uuid.UUID
+    created_by: uuid.UUID
     m3: int
     status: str
 
-class JobCreate(JobBase):
-    pass
 
-
-class JobOut(JobBase):
+class JobResponse(BaseModel):
     id: uuid.UUID
+    origin: uuid.UUID
+    destiny: uuid.UUID
+    car_id: uuid.UUID
+    created_by: uuid.UUID
+    m3: int
+    status: str
+    created_at: datetime
+    updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
