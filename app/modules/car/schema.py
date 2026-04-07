@@ -1,12 +1,13 @@
+from datetime import datetime
 from typing import Optional
 import uuid
 from pydantic import BaseModel
 
 
-class CarBase(BaseModel):
+# Data to create a car (input)
+class CarCreate(BaseModel):
     model: str
     license: str
-    driver_id: uuid.UUID
     manufacture: int | None = None
     km: int | None = None
     fuel: str | None = None
@@ -14,23 +15,35 @@ class CarBase(BaseModel):
     capacity: str | None = None
     versatility: str | None = None
     active: bool
-    image_url: str | None = None
+    image: str | None = None
 
 
-class CarCreate(CarBase):
-    pass
+class CarUpdate(BaseModel):
+    model: Optional[str] = None
+    license: Optional[str] = None
+    manufacture: Optional[int] = None
+    km: Optional[int] = None
+    fuel: Optional[str] = None
+    strength: Optional[str] = None
+    capacity: Optional[str] = None
+    versatility: Optional[str] = None
+    active: Optional[bool] = None
+    image: Optional[str] = None
 
-class UserNested(BaseModel):
+
+# Data returned to the client (output — never exposes the password)
+class CarResponse(BaseModel):
     id: uuid.UUID
-    name: str
-    email: str
+    model: str
+    license: str
+    manufacture: int
+    km: int
+    fuel: str
+    strength: str
+    capacity: str
+    versatility: str
+    active: bool
+    image: Optional[str]
 
     class Config:
-        from_attributes = True
-
-class CarOut(CarBase):
-    id: uuid.UUID
-    driver: Optional[UserNested]
-
-    class Config:
-        from_attributes = True
+        from_attributes = True  # Permite converter model SQLAlchemy → Pydantic

@@ -12,6 +12,10 @@ from app.config import settings
 # Importa todos os models
 from app.modules.user.model import User
 from app.modules.auth.model import UserSession
+from app.modules.car.model import Car
+from app.modules.jobs.model import Job
+from app.modules.statements.model import Statement
+from app.modules.works.model import Work
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
