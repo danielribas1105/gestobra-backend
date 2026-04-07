@@ -15,8 +15,13 @@ async def create_user(data: UserCreate) -> User:
     user = User(
         name=data.name,
         email=data.email,
-        passwordHash=get_hash_password(data.password),
+        password_hash=get_hash_password(data.password),
+        email_verified=data.email_verified,
+        profile=data.profile,
+        active=data.active,
         image=data.image,
+        created_at=data.created_at,
+        updated_at=data.updated_at,
     )
     db.session.add(user)
     await db.session.commit()

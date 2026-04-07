@@ -45,7 +45,7 @@ async def authenticate_user(email: str, password: str):
     user = await get_user_by_email(email)
     if not user:
         return False
-    if not verify_password(password, user.passwordHash):
+    if not verify_password(password, user.password_hash):
         return False
 
     return user
