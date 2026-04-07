@@ -1,14 +1,26 @@
-from sqlalchemy.orm import Session
-from . import model, schema
+import uuid
+
+from fastapi_async_sqlalchemy import db
+from sqlalchemy import select
+from app.modules.car.model import Car
+from app.modules.car.schema import CarCreate
 
 
-def create_car(db: Session, car: schema.CarCreate):
-    db_car = model.Car(**car.dict())
-    db.add(db_car)
-    db.commit()
-    db.refresh(db_car)
-    return db_car
+async def list_cars(offset: int = 0, limit: int = 20) -> list[Car]:
+    result = await db.session.execute(select(Car).offset(offset).limit(limit))
+    return result.scalars().all()
 
 
-def list_cars(db: Session):
-    return db.query(model.Car).all()
+async def create_car(data: CarCreate) -> Car:
+    car = Car(**data.model_dump())
+    db.session.add(car)
+    await db.session.commit()
+    await db.session.refresh(car)
+    return car
+
+
+async def get_car_by_id(car_id: uuid.UUID) -> Car | None:
+    result = await db.session.execute(select(Car).where(Car.id == car_id))
+    car = result.scalars().first()
+
+    return car

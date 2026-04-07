@@ -1,37 +1,33 @@
+import uuid
+
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session, selectinload
-from sqlmodel import select
-from app.db.database import get_db
-from app.modules.statements.model import Statement
-from app.modules.statements import schema
+from app.modules.auth.service import get_current_user
+from app.modules.user.model import User
+from app.modules.statements.schema import StatementCreate, StatementResponse
+from app.modules.statements import service
 
-router = APIRouter(prefix="/statement", tags=["statements"])
+router = APIRouter(prefix="/statements", tags=["statements"])
 
 
-@router.post("/", response_model=schema.StatementOut)
-def create_statement(
-    statement: schema.StatementCreate, session: Session = Depends(get_db)
+@router.get("/", response_model=list[StatementResponse])
+async def list_statements(
+    offset: int = 0, limit: int = 20, user: User = Depends(get_current_user)
 ):
-    db_statement = Statement(**statement.dict())
-    session.add(db_statement)
-    session.commit()
-    session.refresh(db_statement)
-    return db_statement
+    return await service.list_statements(offset, limit)
 
 
-@router.get("/", response_model=list[schema.StatementOut])
-def list_statements(session: Session = Depends(get_db)):
-    statement = select(Statement)
-    statements = session.exec(statement).all()
-    return statements
+@router.post("/", response_model=StatementCreate, status_code=201)
+async def create_statement(
+    statement: StatementCreate, user: User = Depends(get_current_user)
+):
+    return await service.create_statement(statement)
 
 
-@router.get("/{id}", response_model=schema.StatementOut)
-def get_statement(id: str, session: Session = Depends(get_db)):
-    statement = select(Statement).where(Statement.id == id)
-    statement = session.exec(statement).first()
-
+@router.get("/{statement_id}", response_model=StatementResponse)
+async def get_statement(
+    statement_id: uuid.UUID, user: User = Depends(get_current_user)
+):
+    statement = await service.get_statement_by_id(statement_id)
     if not statement:
-        raise HTTPException(status_code=404, detail="User not found")
-
+        raise HTTPException(status_code=404, detail="Manifesto não encontrado")
     return statement

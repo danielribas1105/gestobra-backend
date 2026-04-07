@@ -1,7 +1,6 @@
-from datetime import datetime
 from typing import Optional
 import uuid
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 # Data to create a car (input)
@@ -14,7 +13,7 @@ class CarCreate(BaseModel):
     strength: str | None = None
     capacity: str | None = None
     versatility: str | None = None
-    active: bool
+    active: bool = True
     image: str | None = None
 
 
@@ -36,14 +35,13 @@ class CarResponse(BaseModel):
     id: uuid.UUID
     model: str
     license: str
-    manufacture: int
-    km: int
-    fuel: str
-    strength: str
-    capacity: str
-    versatility: str
+    manufacture: int | None = None
+    km: int | None = None
+    fuel: str | None = None
+    strength: str | None = None
+    capacity: str | None = None
+    versatility: str | None = None
     active: bool
-    image: Optional[str]
+    image: str | None = None
 
-    class Config:
-        from_attributes = True  # Permite converter model SQLAlchemy → Pydantic
+    model_config = ConfigDict(from_attributes=True)

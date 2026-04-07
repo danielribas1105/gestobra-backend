@@ -1,18 +1,17 @@
-from typing import List
+from datetime import datetime
 import uuid
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
-class StatementBase(BaseModel):
-    name: str
-    created_at: str
-    active: bool
+class StatementCreate(BaseModel):
+    job_id: uuid.UUID
+    status: str
 
-class StatementCreate(StatementBase):
-    pass
 
-class StatementOut(StatementBase):
+class StatementResponse(BaseModel):
     id: uuid.UUID
+    job_id: uuid.UUID
+    status: str
+    created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

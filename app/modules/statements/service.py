@@ -1,19 +1,27 @@
 import uuid
-from sqlalchemy.orm import Session
 from fastapi_async_sqlalchemy import db
 from sqlmodel import select
-from . import model, schema
+from app.modules.statements.model import Statement
+from app.modules.statements.schema import StatementCreate
 
 
-def create_statement(db: Session, statement: schema.StatementCreate):
-    db_statement = model.Statement(**statement.dict())
-    db.add(db_statement)
-    db.commit()
-    db.refresh(db_statement)
-    return db_statement
+async def list_statements(offset: int = 0, limit: int = 20) -> list[Statement]:
+    result = await db.session.execute(select(Statement).offset(offset).limit(limit))
+    return result.scalars().all()
 
-def list_statements(db: Session):
-    return db.query(model.Statement).all()
 
-async def get_statement_by_id(id: uuid.UUID | str | None):
-    return await db.session.get(model.Statement, id)
+async def create_statement(data: StatementCreate) -> Statement:
+    statement = Statement(**data.model_dump())
+    db.session.add(statement)
+    await db.session.commit()
+    await db.session.refresh(statement)
+    return statement
+
+
+async def get_statement_by_id(statement_id: uuid.UUID) -> Statement:
+    result = await db.session.execute(
+        select(Statement).where(Statement.id == statement_id)
+    )
+    statement = result.scalars().first()
+
+    return statement

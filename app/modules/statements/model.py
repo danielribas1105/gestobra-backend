@@ -1,6 +1,7 @@
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 import uuid
+from sqlalchemy import Column, DateTime, func
 from sqlmodel import Relationship, SQLModel, Field
 
 if TYPE_CHECKING:
@@ -15,6 +16,9 @@ class Statement(SQLModel, table=True):
     job_id: uuid.UUID = Field(foreign_key="jobs.id", unique=True)
 
     status: str
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), server_default=func.now()),
+    )
 
     job: "Job" = Relationship(back_populates="statement")

@@ -1,42 +1,36 @@
+import uuid
+
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session, selectinload
-from sqlmodel import select
-from app.db.database import get_db
-from app.modules.car.model import Car
-from app.modules.car import schema
+from app.modules.auth.service import get_current_user
+from app.modules.car.schema import CarCreate, CarResponse
+from app.modules.car import service
 from app.modules.user.model import User
 
-router = APIRouter(prefix="/car", tags=["cars"])
+router = APIRouter(prefix="/cars", tags=["cars"])
 
 
-@router.post("/", response_model=schema.CarResponse)
-def create_car(car: schema.CarCreate, session: Session = Depends(get_db)):
-    db_car = Car(**car.dict())
-    session.add(db_car)
-    session.commit()
-    session.refresh(db_car)
-    return db_car
+@router.get("/", response_model=list[CarResponse])
+async def list_cars(
+    offset: int = 0, limit: int = 20, user: User = Depends(get_current_user)
+):
+    return await service.list_cars(offset, limit)
 
 
-@router.get("/", response_model=list[schema.CarResponse])
-def list_cars(session: Session = Depends(get_db)):
-    statement = select(Car).options(selectinload(Car.driver))
-    cars = session.exec(statement).all()
-    return cars
+@router.post("/", response_model=CarResponse, status_code=201)
+async def create_car(car: CarCreate, user: User = Depends(get_current_user)):
+    return await service.create_car(car)
 
 
-@router.get("/{id}", response_model=schema.CarResponse)
-def get_car(id: str, session: Session = Depends(get_db)):
-    statement = select(Car).where(Car.id == id).options(selectinload(Car.driver))
-    car = session.exec(statement).first()
-
+@router.get("/{car_id}", response_model=CarResponse)
+async def get_car(car_id: uuid.UUID, user: User = Depends(get_current_user)):
+    car = await service.get_car_by_id(car_id)
     if not car:
-        raise HTTPException(status_code=404, detail="Car not found")
-
+        raise HTTPException(status_code=404, detail="Veículo não encontrado")
     return car
 
 
-@router.patch("/{id}/assign-driver", response_model=schema.CarResponse)
+# Atualização parcial
+""" @router.patch("/{car_id}/assign-driver", response_model=schema.CarResponse)
 def assign_driver(id: str, driver_id: str, session: Session = Depends(get_db)):
     # Verifica se o carro existe
     car = session.get(Car, id)
@@ -54,4 +48,4 @@ def assign_driver(id: str, driver_id: str, session: Session = Depends(get_db)):
     session.commit()
     session.refresh(car)
 
-    return car
+    return car """
