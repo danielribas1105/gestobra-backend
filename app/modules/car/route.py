@@ -9,7 +9,7 @@ from app.modules.user.model import User
 router = APIRouter(prefix="/cars", tags=["Cars"])
 
 
-@router.get("/", response_model=list[CarResponse])
+@router.get("", response_model=list[CarResponse])
 async def list_cars(
     offset: int = 0, limit: int = 20, user: User = Depends(get_current_user)
 ):

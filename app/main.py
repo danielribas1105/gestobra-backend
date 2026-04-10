@@ -9,6 +9,7 @@ app = FastAPI(
     title="GestObra API",
     description="API GestObra Web Application",
     version="1.0.0",
+    redirect_slashes=False,
 )
 
 # ✅ Middleware with the correct URL via settings.db_url
