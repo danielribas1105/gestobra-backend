@@ -7,6 +7,11 @@ from app.modules.user.schema import UserCreate, UserUpdate
 from app.utils.security import get_hash_password
 
 
+async def list_users(offset: int = 0, limit: int = 20) -> list[User]:
+    result = await db.session.execute(select(User).offset(offset).limit(limit))
+    return result.scalars().all()
+
+
 async def create_user(data: UserCreate) -> User:
     result = await db.session.execute(select(User).where(User.email == data.email))
     if result.scalars().first():

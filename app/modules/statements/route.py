@@ -9,7 +9,7 @@ from app.modules.statements import service
 router = APIRouter(prefix="/statements", tags=["Statements"])
 
 
-@router.get("/", response_model=list[StatementResponse])
+@router.get("", response_model=list[StatementResponse])
 async def list_statements(
     offset: int = 0, limit: int = 20, user: User = Depends(get_current_user)
 ):

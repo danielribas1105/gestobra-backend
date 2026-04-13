@@ -8,7 +8,9 @@ from app.modules.car.schema import CarCreate
 
 async def list_cars(offset: int = 0, limit: int = 20) -> list[Car]:
     result = await db.session.execute(select(Car).offset(offset).limit(limit))
-    return result.scalars().all()
+    cars = result.scalars().all()
+    print(f"Cars {cars}")
+    return cars
 
 
 async def create_car(data: CarCreate) -> Car:

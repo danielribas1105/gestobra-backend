@@ -18,7 +18,7 @@ class User(SQLModel, table=True):
     password_hash: Optional[str] = Field(default=None, nullable=True)
     email_verified: bool = Field(default=False)
     image: Optional[str] = Field(default=None, nullable=True)
-    profile: str = Field(default="user")
+    profile: str = Field(default="operator")
     active: bool = Field(default=True)
     created_at: Optional[datetime] = Field(
         default=None,
@@ -33,4 +33,8 @@ class User(SQLModel, table=True):
     created_jobs: List["Job"] = Relationship(
         back_populates="creator",
         sa_relationship_kwargs={"foreign_keys": "[Job.created_by]"},
+    )
+    driven_jobs: List["Job"] = Relationship(
+        back_populates="driver",
+        sa_relationship_kwargs={"foreign_keys": "[Job.driver_id]"},
     )

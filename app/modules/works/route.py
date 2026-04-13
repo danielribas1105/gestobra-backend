@@ -13,7 +13,7 @@ from app.modules.works import service
 router = APIRouter(prefix="/works", tags=["Works"])
 
 
-@router.get("/", response_model=list[WorkResponse])
+@router.get("", response_model=list[WorkResponse])
 async def list_works(
     offset: int = 0, limit: int = 20, user: User = Depends(get_current_user)
 ):

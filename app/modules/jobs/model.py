@@ -23,6 +23,7 @@ class Job(SQLModel, table=True):
     destiny: uuid.UUID = Field(foreign_key="works.id", nullable=False, index=True)
     car_id: uuid.UUID = Field(foreign_key="cars.id", nullable=False, index=True)
     created_by: uuid.UUID = Field(foreign_key="users.id", nullable=False, index=True)
+    driver_id: uuid.UUID = Field(foreign_key="users.id", nullable=False, index=True)
     m3: int = Field()
     status: str = Field()
     created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
@@ -34,6 +35,10 @@ class Job(SQLModel, table=True):
     creator: Optional["User"] = Relationship(
         back_populates="created_jobs",
         sa_relationship_kwargs={"foreign_keys": "[Job.created_by]"},
+    )
+    driver: Optional["User"] = Relationship(
+        back_populates="driven_jobs",
+        sa_relationship_kwargs={"foreign_keys": "[Job.driver_id]"},
     )
     origin_work: Optional["Work"] = Relationship(
         back_populates="jobs_origin",

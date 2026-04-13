@@ -13,7 +13,7 @@ from app.modules.jobs import service
 router = APIRouter(prefix="/jobs", tags=["Jobs"])
 
 
-@router.get("/", response_model=list[JobResponse])
+@router.get("", response_model=list[JobResponse])
 async def list_jobs(
     offset: int = 0, limit: int = 20, user: User = Depends(get_current_user)
 ):
