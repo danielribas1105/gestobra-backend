@@ -1,12 +1,9 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from sqlmodel import select
-from app.db.database import get_db
+from fastapi import APIRouter, Depends, HTTPException, status
+from app.modules.auth.dependencies import require_admin
 from app.modules.auth.service import get_current_user
 from app.modules.user.model import User
-from app.modules.jobs.model import Job
 from app.modules.jobs.schema import JobCreate, JobResponse
 from app.modules.jobs import service
 
@@ -21,8 +18,8 @@ async def list_jobs(
 
 
 @router.post("/", response_model=JobResponse, status_code=201)
-async def create_job(job: JobCreate, user: User = Depends(get_current_user)):
-    return await service.create_job(job)
+async def create_job(job: JobCreate, user: User = Depends(require_admin)):
+    return await service.create_job(job, created_by=user.id)
 
 
 @router.get("/{job_id}", response_model=JobResponse)

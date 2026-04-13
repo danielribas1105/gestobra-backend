@@ -11,8 +11,8 @@ async def list_jobs(offset: int = 0, limit: int = 20) -> list[Job]:
     return result.scalars().all()
 
 
-async def create_job(data: JobCreate) -> Job:
-    job = Job(**data.model_dump())
+async def create_job(data: JobCreate, created_by: uuid.UUID) -> Job:
+    job = Job(**data.model_dump(), created_by=created_by)
     db.session.add(job)
     await db.session.commit()
     await db.session.refresh(job)
