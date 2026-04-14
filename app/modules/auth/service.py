@@ -3,7 +3,7 @@ from math import floor
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from fastapi_async_sqlalchemy import db
 from jose import jwt, JWTError
@@ -62,18 +62,31 @@ async def authenticate_user(email: str, password: str):
     return user
 
 
-async def get_current_user(
-    token: Annotated[str, Depends(oauth2_scheme)],
-):
-    payload = decode_token(token)
+async def get_current_user(request: Request):
+    token = request.headers.get("Authorization")
 
-    user = await get_user_by_id(payload.get("sub"))
+    if token and token.startswith("Bearer "):
+        token = token.replace("Bearer ", "")
+    else:
+        token = request.cookies.get("access_token")
 
-    if not user:
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: str = payload.get("sub")
+
+        if user_id is None:
+            raise HTTPException(status_code=401)
+
+    except JWTError:
+        raise HTTPException(status_code=401)
+
+    user = await get_user_by_id(user_id)
+
+    if not user or not user.active:
         raise HTTPException(status_code=401, detail="User not found")
-
-    if not user.active:
-        raise HTTPException(status_code=403, detail="Inactive user")
 
     return user
 
