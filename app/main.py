@@ -1,9 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_async_sqlalchemy import SQLAlchemyMiddleware
 
 from app import router
 from app.config import settings
+from app.modules.fleet.websocket import fleet_ws
 
 
 app = FastAPI(
@@ -35,6 +36,11 @@ app.add_middleware(
 @app.get("/", tags=["Health"])
 def health_check():
     return {"status API": "ok"}
+
+
+@app.websocket("/ws/fleet")
+async def websocket_endpoint(websocket: WebSocket):
+    await fleet_ws(websocket)
 
 
 app.include_router(router.router)

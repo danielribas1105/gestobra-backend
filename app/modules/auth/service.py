@@ -28,16 +28,27 @@ def create_access_token(
     """Generates a encoded JWT with the provided data and expiration time."""
     to_encode = data.copy()
 
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(
-            minutes=ACCESS_TOKEN_EXPIRE_MINUTES
-        )
+    expire = datetime.now(timezone.utc) + (
+        expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
 
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt, floor(expire.timestamp())
+
+
+def decode_token(token: str):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+
+async def get_current_user_token(
+    token: Annotated[str, Depends(oauth2_scheme)],
+):
+    return decode_token(token)
 
 
 async def authenticate_user(email: str, password: str):
@@ -51,42 +62,26 @@ async def authenticate_user(email: str, password: str):
     return user
 
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+async def get_current_user(
+    token: Annotated[str, Depends(oauth2_scheme)],
+):
+    payload = decode_token(token)
 
-        user_id: str = payload.get("sub")
+    user = await get_user_by_id(payload.get("sub"))
 
-        if user_id is None:
-            raise credentials_exception
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
 
-        token_data = TokenData(user_id=user_id)
-    except JWTError:
-        raise credentials_exception
-
-    # corrigido: get_user_by_id agora usa db.session interno, sem passar db
-    user = await get_user_by_id(token_data.user_id)
-    if user is None:
-        raise credentials_exception
-
-    if user.active is False:
-        raise HTTPException(status_code=400, detail="Inactive user")
+    if not user.active:
+        raise HTTPException(status_code=403, detail="Inactive user")
 
     return user
 
 
-async def create_refresh_token(user_id: str, expires_delta: timedelta | None = None):
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(
-            minutes=REFRESH_TOKEN_EXPIRE_MINUTES
-        )
+async def create_refresh_token(user_id: str):
+    expire = datetime.now(timezone.utc) + timedelta(
+        minutes=REFRESH_TOKEN_EXPIRE_MINUTES
+    )
 
     new_session = UserSession(user_id=UUID(user_id), expires_at=expire)
 
@@ -94,9 +89,4 @@ async def create_refresh_token(user_id: str, expires_delta: timedelta | None = N
     await db.session.commit()
     await db.session.refresh(new_session)
 
-    to_encode = {"sub": user_id, "jti": str(new_session.id)}
-    token, _ = create_access_token(  # corrigido: desempacota a tuple, retorna só str
-        data=to_encode,
-        expires_delta=expires_delta or timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES),
-    )
-    return token
+    return str(new_session.id)

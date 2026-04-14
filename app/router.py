@@ -5,6 +5,7 @@ import app.modules.jobs.route as jobs
 import app.modules.statements.route as statements
 import app.modules.user.route as user
 import app.modules.works.route as woks
+import app.modules.fleet.route as fleet
 
 
 router = APIRouter(prefix="/api/v1")
@@ -16,3 +17,4 @@ router.include_router(jobs.router)
 router.include_router(statements.router)
 router.include_router(user.router)
 router.include_router(woks.router)
+router.include_router(fleet.router)
