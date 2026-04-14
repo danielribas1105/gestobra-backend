@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi_async_sqlalchemy import SQLAlchemyMiddleware
 
 from app import router
@@ -12,10 +13,22 @@ app = FastAPI(
     redirect_slashes=False,
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # URL do Next.js em dev
+    allow_credentials=True,  # necessário para cookies HttpOnly
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # ✅ Middleware with the correct URL via settings.db_url
 app.add_middleware(
     SQLAlchemyMiddleware,
-    db_url=settings.db_url,
+    db_url=settings.async_db_url,  # ← era settings.db_url
+    engine_args={
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+    },
 )
 
 
