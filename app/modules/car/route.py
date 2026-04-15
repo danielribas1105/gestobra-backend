@@ -34,7 +34,7 @@ async def get_car(car_id: uuid.UUID, user: User = Depends(get_current_user)):
 async def update_car(
     car_id: uuid.UUID,
     data: CarUpdate,
-    user: Car = Depends(get_current_user),
+    user: User = Depends(get_current_user),
 ):
     return await service.update(car_id, data)
 

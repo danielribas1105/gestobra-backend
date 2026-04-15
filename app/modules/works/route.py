@@ -1,13 +1,9 @@
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from sqlmodel import select
-from app.db.database import get_db
 from app.modules.auth.service import get_current_user
 from app.modules.user.model import User
-from app.modules.works.model import Work
-from app.modules.works.schema import WorkCreate, WorkResponse
+from app.modules.works.schema import WorkCreate, WorkResponse, WorkUpdate
 from app.modules.works import service
 
 router = APIRouter(prefix="/works", tags=["Works"])
@@ -31,3 +27,17 @@ async def get_work(work_id: uuid.UUID, user: User = Depends(get_current_user)):
     if not work:
         raise HTTPException(status_code=404, detail="Obra não encontrada")
     return work
+
+
+@router.put("/{work_id}", response_model=WorkResponse)
+async def update_work(
+    work_id: uuid.UUID,
+    data: WorkUpdate,
+    user: User = Depends(get_current_user),
+):
+    return await service.update(work_id, data)
+
+
+@router.delete("/{work_id}", status_code=204)
+async def delete_work(work_id: uuid.UUID, user: User = Depends(get_current_user)):
+    await service.delete(work_id)
