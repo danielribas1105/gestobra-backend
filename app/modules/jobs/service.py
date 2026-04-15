@@ -1,9 +1,11 @@
 import uuid
 
+from fastapi import HTTPException
 from fastapi_async_sqlalchemy import db
 from sqlalchemy import select
 from app.modules.jobs.model import Job
-from app.modules.jobs.schema import JobCreate
+from app.modules.jobs.schema import JobCreate, JobUpdate
+from app.modules.works.service import get_work_by_id
 
 
 async def list_jobs(offset: int = 0, limit: int = 20) -> list[Job]:
@@ -24,3 +26,26 @@ async def get_job_by_id(job_id: uuid.UUID) -> Job | None:
     job = result.scalars().first()
 
     return job
+
+
+async def update(job_id: uuid.UUID, data: JobUpdate) -> Job:
+    job = await get_job_by_id(job_id)
+    if not job:
+        raise HTTPException(
+            status_code=404, detail="Movimentação entre obras, não encontrada"
+        )
+    for field, value in data.model_dump(exclude_unset=True).items():
+        setattr(job, field, value)
+    await db.session.commit()
+    await db.session.refresh(job)
+    return job
+
+
+async def delete(job_id: uuid.UUID) -> None:
+    job = await get_job_by_id(job_id)
+    if not job:
+        raise HTTPException(
+            status_code=404, detail="Movimentação entre obras, não encontrada"
+        )
+    await db.session.delete(job)
+    await db.session.commit()

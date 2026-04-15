@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from app.modules.auth.dependencies import require_admin
 from app.modules.auth.service import get_current_user
 from app.modules.user.model import User
-from app.modules.jobs.schema import JobCreate, JobResponse
+from app.modules.jobs.schema import JobCreate, JobResponse, JobUpdate
 from app.modules.jobs import service
 
 router = APIRouter(prefix="/jobs", tags=["Jobs"])
@@ -30,3 +30,17 @@ async def get_job(job_id: uuid.UUID, user: User = Depends(get_current_user)):
             status_code=404, detail="Movimentação entre obras, não encontrada"
         )
     return job
+
+
+@router.put("/{job_id}", response_model=JobResponse)
+async def update_job(
+    job_id: uuid.UUID,
+    data: JobUpdate,
+    user: User = Depends(get_current_user),
+):
+    return await service.update(job_id, data)
+
+
+@router.delete("/{job_id}", status_code=204)
+async def delete_job(job_id: uuid.UUID, user: User = Depends(get_current_user)):
+    await service.delete(job_id)
