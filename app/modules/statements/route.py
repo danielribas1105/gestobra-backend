@@ -3,7 +3,11 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from app.modules.auth.service import get_current_user
 from app.modules.user.model import User
-from app.modules.statements.schema import StatementCreate, StatementResponse
+from app.modules.statements.schema import (
+    StatementCreate,
+    StatementResponse,
+    StatementUpdate,
+)
 from app.modules.statements import service
 
 router = APIRouter(prefix="/statements", tags=["Statements"])
@@ -31,3 +35,19 @@ async def get_statement(
     if not statement:
         raise HTTPException(status_code=404, detail="Manifesto não encontrado")
     return statement
+
+
+@router.put("/{statement_id}", response_model=StatementResponse)
+async def update_statement(
+    statement_id: uuid.UUID,
+    data: StatementUpdate,
+    user: User = Depends(get_current_user),
+):
+    return await service.update(statement_id, data)
+
+
+@router.delete("/{statement_id}", status_code=204)
+async def delete_statement(
+    statement_id: uuid.UUID, user: User = Depends(get_current_user)
+):
+    await service.delete(statement_id)

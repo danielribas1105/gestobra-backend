@@ -8,6 +8,10 @@ class StatementCreate(BaseModel):
     status: str
 
 
+class StatementUpdate(BaseModel):
+    status: str
+
+
 class StatementResponse(BaseModel):
     id: uuid.UUID
     job_id: uuid.UUID

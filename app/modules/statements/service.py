@@ -1,8 +1,9 @@
 import uuid
+from fastapi import HTTPException
 from fastapi_async_sqlalchemy import db
 from sqlmodel import select
 from app.modules.statements.model import Statement
-from app.modules.statements.schema import StatementCreate
+from app.modules.statements.schema import StatementCreate, StatementUpdate
 
 
 async def list_statements(offset: int = 0, limit: int = 20) -> list[Statement]:
@@ -25,3 +26,26 @@ async def get_statement_by_id(statement_id: uuid.UUID) -> Statement:
     statement = result.scalars().first()
 
     return statement
+
+
+async def update(statement_id: uuid.UUID, data: StatementUpdate) -> Statement:
+    statement = await get_statement_by_id(statement_id)
+    if not statement:
+        raise HTTPException(
+            status_code=404, detail="Movimentação entre obras, não encontrada"
+        )
+    for field, value in data.model_dump(exclude_unset=True).items():
+        setattr(statement, field, value)
+    await db.session.commit()
+    await db.session.refresh(statement)
+    return statement
+
+
+async def delete(statement_id: uuid.UUID) -> None:
+    statement = await get_statement_by_id(statement_id)
+    if not statement:
+        raise HTTPException(
+            status_code=404, detail="Movimentação entre obras, não encontrada"
+        )
+    await db.session.delete(statement)
+    await db.session.commit()
