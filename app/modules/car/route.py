@@ -2,7 +2,8 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException
 from app.modules.auth.service import get_current_user
-from app.modules.car.schema import CarCreate, CarResponse
+from app.modules.car.model import Car
+from app.modules.car.schema import CarCreate, CarResponse, CarUpdate
 from app.modules.car import service
 from app.modules.user.model import User
 
@@ -27,6 +28,20 @@ async def get_car(car_id: uuid.UUID, user: User = Depends(get_current_user)):
     if not car:
         raise HTTPException(status_code=404, detail="Veículo não encontrado")
     return car
+
+
+@router.put("/{car_id}", response_model=CarResponse)
+async def update_car(
+    car_id: uuid.UUID,
+    data: CarUpdate,
+    user: Car = Depends(get_current_user),
+):
+    return await service.update(car_id, data)
+
+
+@router.delete("/{car_id}", status_code=204)
+async def delete_car(car_id: uuid.UUID, user: User = Depends(get_current_user)):
+    await service.delete(car_id)
 
 
 # Atualização parcial
