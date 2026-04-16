@@ -17,7 +17,7 @@ async def list_cars(
     return await service.list_cars(offset, limit)
 
 
-@router.post("/", response_model=CarResponse, status_code=201)
+@router.post("", response_model=CarResponse, status_code=201)
 async def create_car(car: CarCreate, user: User = Depends(get_current_user)):
     return await service.create_car(car)
 
