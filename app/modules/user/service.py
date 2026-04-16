@@ -17,17 +17,10 @@ async def create_user(data: UserCreate) -> User:
     if result.scalars().first():
         raise HTTPException(status_code=400, detail="E-mail já cadastrado")
 
-    user = User(
-        name=data.name,
-        email=data.email,
-        password_hash=get_hash_password(data.password),
-        email_verified=data.email_verified,
-        profile=data.profile,
-        active=data.active,
-        image=data.image,
-        created_at=data.created_at,
-        updated_at=data.updated_at,
-    )
+    dump = data.model_dump(exclude={"password"})
+    dump["password_hash"] = get_hash_password(data.password)
+
+    user = User(**dump)
     db.session.add(user)
     await db.session.commit()
     await db.session.refresh(user)
@@ -48,8 +41,15 @@ async def update_user(user_id: str, data: UserUpdate) -> User:
     user = await get_user_by_id(user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Usuário não encontrado")
-    for field, value in data.model_dump(exclude_unset=True).items():
+
+    dump = data.model_dump(exclude_unset=True, exclude={"password"})
+
+    if data.password:
+        dump["password_hash"] = get_hash_password(data.password)
+
+    for field, value in dump.items():
         setattr(user, field, value)
+
     await db.session.commit()
     await db.session.refresh(user)
     return user

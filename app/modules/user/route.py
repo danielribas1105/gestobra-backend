@@ -20,7 +20,7 @@ async def my_profile(user: User = Depends(get_current_user)):
     return user
 
 
-@router.post("/", response_model=UserResponse, status_code=201)
+@router.post("", response_model=UserResponse, status_code=201)
 async def register_user(data: UserCreate):
     return await service.create_user(data)
 

@@ -15,9 +15,10 @@ class User(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     name: str
     email: str = Field(unique=True, index=True)
+    cpf: Optional[str] = Field(default=None, nullable=True)
+    phone: Optional[str] = Field(default=None, nullable=True)
     password_hash: Optional[str] = Field(default=None, nullable=True)
     email_verified: bool = Field(default=False)
-    image: Optional[str] = Field(default=None, nullable=True)
     profile: str = Field(default="operator")
     active: bool = Field(default=True)
     created_at: Optional[datetime] = Field(
@@ -28,6 +29,7 @@ class User(SQLModel, table=True):
         default=None,
         sa_column=Column(DateTime(timezone=True), onupdate=func.now()),
     )
+    image: Optional[str] = Field(default=None, nullable=True)
 
     # Relationship
     created_jobs: List["Job"] = Relationship(
