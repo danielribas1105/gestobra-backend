@@ -10,10 +10,10 @@ if TYPE_CHECKING:
 
 
 class WorkStatus(str, enum.Enum):
-    ATIVA = "ativa"
-    INATIVA = "inativa"
-    PARALIZADA = "paralizada"
-    FINALIZADA = "finalizada"
+    ATIVA = "active"
+    INATIVA = "inactive"
+    PARALIZADA = "paralized"
+    FINALIZADA = "finished"
 
 
 class Work(SQLModel, table=True):
