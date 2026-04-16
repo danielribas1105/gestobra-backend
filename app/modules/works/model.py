@@ -1,10 +1,19 @@
-from typing import TYPE_CHECKING, List
+from datetime import datetime
+import enum
+from typing import TYPE_CHECKING, List, Optional
 import uuid
 from sqlmodel import Relationship, SQLModel, Field
-from sqlalchemy import text
+from sqlalchemy import Column, DateTime, Enum as SAEnum, String, func, text
 
 if TYPE_CHECKING:
     from app.modules.jobs.model import Job
+
+
+class WorkStatus(str, enum.Enum):
+    ATIVA = "ativa"
+    INATIVA = "inativa"
+    PARALIZADA = "paralizada"
+    FINALIZADA = "finalizada"
 
 
 class Work(SQLModel, table=True):
@@ -16,14 +25,25 @@ class Work(SQLModel, table=True):
         sa_column_kwargs={"server_default": text("gen_random_uuid()")},
     )
     name: str = Field(index=True)
-    description: str | None = Field(default=None)
-    address: str | None = Field(default=None)
-    region: str | None = Field(default=None)
-    city: str | None = Field(default=None)
-    state: str | None = Field(default=None)
-    budget: str | None = Field(default=None)
-    status: str | None = Field(default="ativa")
-    image_url: str | None = Field(default=None)
+    description: Optional[str] = Field(default=None, nullable=True)
+    address: Optional[str] = Field(default=None, nullable=True)
+    region: Optional[str] = Field(default=None, nullable=True)
+    city: Optional[str] = Field(default=None, nullable=True)
+    state: Optional[str] = Field(default=None, nullable=True)
+    active: bool = Field(default=True)
+    status: WorkStatus = Field(
+        default=WorkStatus.ATIVA,
+        sa_column=Column(
+            String(50),
+            nullable=False,
+            server_default=WorkStatus.ATIVA.value,
+        ),
+    )
+    created_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), server_default=func.now()),
+    )
+    image: Optional[str] = Field(default=None, nullable=True)
 
     # Relationship
     jobs_origin: List["Job"] = Relationship(

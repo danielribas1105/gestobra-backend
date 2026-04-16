@@ -1,10 +1,21 @@
-from typing import TYPE_CHECKING, List
+from datetime import datetime
+import enum
+from typing import TYPE_CHECKING, List, Optional
 import uuid
 from sqlmodel import Relationship, SQLModel, Field
-from sqlalchemy import text
+from sqlalchemy import Column, DateTime, String, func, text
 
 if TYPE_CHECKING:
     from app.modules.jobs.model import Job
+
+
+class CarFuel(str, enum.Enum):
+    DIESEL = "diesel"
+    GASOLINE = "gasoline"
+    ETHANOL = "ethanol"
+    ELECTRIC = "electric"
+    GNV = "gnv"
+    HYBRID = "hybrid"
 
 
 class Car(SQLModel, table=True):
@@ -15,16 +26,26 @@ class Car(SQLModel, table=True):
         primary_key=True,
         sa_column_kwargs={"server_default": text("gen_random_uuid()")},
     )
-
     model: str = Field()
     license: str = Field(sa_column_kwargs={"unique": True, "index": True})
     manufacture: int | None = Field(default=None)
     km: int | None = Field(default=None)
-    fuel: str | None = Field(default=None)
+    fuel: CarFuel = Field(
+        default=CarFuel.DIESEL,
+        sa_column=Column(
+            String(50),
+            nullable=False,
+            server_default=CarFuel.DIESEL.value,
+        ),
+    )
     strength: str | None = Field(default=None)
     capacity: str | None = Field(default=None)
     versatility: str | None = Field(default=None)
     active: bool = Field(default=True, sa_column_kwargs={"server_default": "true"})
+    created_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), server_default=func.now()),
+    )
     image: str | None = Field(default=None)
 
     # Relationship

@@ -17,7 +17,7 @@ async def list_jobs(
     return await service.list_jobs(offset, limit)
 
 
-@router.post("/", response_model=JobResponse, status_code=201)
+@router.post("", response_model=JobResponse, status_code=201)
 async def create_job(job: JobCreate, user: User = Depends(require_admin)):
     return await service.create_job(job, created_by=user.id)
 
@@ -34,13 +34,21 @@ async def get_job(job_id: uuid.UUID, user: User = Depends(get_current_user)):
 
 @router.put("/{job_id}", response_model=JobResponse)
 async def update_job(
-    job_id: uuid.UUID,
-    data: JobUpdate,
-    user: User = Depends(get_current_user),
+    job_id: uuid.UUID, data: JobUpdate, user: User = Depends(require_admin)
 ):
+    job = await service.get_job_by_id(job_id)
+    if not job:
+        raise HTTPException(
+            status_code=404, detail="Movimentação entre obras não encontrada"
+        )
     return await service.update(job_id, data)
 
 
 @router.delete("/{job_id}", status_code=204)
-async def delete_job(job_id: uuid.UUID, user: User = Depends(get_current_user)):
+async def delete_job(job_id: uuid.UUID, user: User = Depends(require_admin)):
+    job = await service.get_job_by_id(job_id)
+    if not job:
+        raise HTTPException(
+            status_code=404, detail="Movimentação entre obras não encontrada"
+        )
     await service.delete(job_id)

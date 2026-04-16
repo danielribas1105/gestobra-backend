@@ -3,6 +3,8 @@ import uuid
 from typing import Optional
 from pydantic import BaseModel, EmailStr
 
+from app.modules.user.model import UserProfile
+
 
 class UserCreate(BaseModel):
     name: str
@@ -10,7 +12,7 @@ class UserCreate(BaseModel):
     password: str
     cpf: Optional[str] = None
     phone: Optional[str] = None
-    profile: str = "operator"
+    profile: UserProfile = UserProfile.OPERATOR
     active: bool = True
     image: Optional[str] = None
 
@@ -21,7 +23,7 @@ class UserUpdate(BaseModel):
     password: Optional[str] = None  # se enviado, re-hashear
     cpf: Optional[str] = None
     phone: Optional[str] = None
-    profile: Optional[str] = None
+    profile: Optional[UserProfile] = None
     active: Optional[bool] = None
     image: Optional[str] = None
 
@@ -32,7 +34,7 @@ class UserResponse(BaseModel):
     email: str
     cpf: Optional[str] = None
     phone: Optional[str] = None
-    profile: str
+    profile: UserProfile
     active: bool
     email_verified: bool
     image: Optional[str] = None

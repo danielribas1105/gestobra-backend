@@ -6,6 +6,8 @@ import app.modules.statements.route as statements
 import app.modules.user.route as user
 import app.modules.works.route as woks
 import app.modules.fleet.route as fleet
+import app.modules.materials.route as materials
+import app.modules.payments.route as payments
 
 
 router = APIRouter(prefix="/api/v1")
@@ -18,3 +20,5 @@ router.include_router(statements.router)
 router.include_router(user.router)
 router.include_router(woks.router)
 router.include_router(fleet.router)
+router.include_router(materials.router)
+router.include_router(payments.router)

@@ -20,7 +20,7 @@ async def list_statements(
     return await service.list_statements(offset, limit)
 
 
-@router.post("/", response_model=StatementCreate, status_code=201)
+@router.post("", response_model=StatementResponse, status_code=201)
 async def create_statement(
     statement: StatementCreate, user: User = Depends(get_current_user)
 ):
@@ -43,6 +43,9 @@ async def update_statement(
     data: StatementUpdate,
     user: User = Depends(get_current_user),
 ):
+    statement = await service.get_statement_by_id(statement_id)
+    if not statement:
+        raise HTTPException(status_code=404, detail="Manifesto não encontrado")
     return await service.update(statement_id, data)
 
 
@@ -50,4 +53,7 @@ async def update_statement(
 async def delete_statement(
     statement_id: uuid.UUID, user: User = Depends(get_current_user)
 ):
+    statement = await service.get_statement_by_id(statement_id)
+    if not statement:
+        raise HTTPException(status_code=404, detail="Manifesto não encontrado")
     await service.delete(statement_id)
