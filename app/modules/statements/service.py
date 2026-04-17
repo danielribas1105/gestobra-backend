@@ -12,7 +12,9 @@ async def list_statements(offset: int = 0, limit: int = 20) -> list[Statement]:
 
 
 async def create_statement(data: StatementCreate) -> Statement:
-    statement = Statement(**data.model_dump(), status=StatementStatus.PENDING)
+    statement = Statement(
+        **data.model_dump(exclude_none=True), status=StatementStatus.PENDING
+    )
     db.session.add(statement)
     await db.session.commit()
     await db.session.refresh(statement)
