@@ -16,7 +16,7 @@ async def list_works(
     return await service.list_works(offset, limit)
 
 
-@router.post("/", response_model=WorkResponse, status_code=201)
+@router.post("", response_model=WorkResponse, status_code=201)
 async def create_work(work: WorkCreate, user: User = Depends(get_current_user)):
     return await service.create_work(work)
 
