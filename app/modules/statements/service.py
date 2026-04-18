@@ -1,8 +1,8 @@
+from datetime import datetime, timezone
 import uuid
-from fastapi import HTTPException
 from fastapi_async_sqlalchemy import db
 from sqlmodel import select
-from app.modules.statements.model import Statement, StatementStatus
+from app.modules.statements.model import Statement
 from app.modules.statements.schema import StatementCreate, StatementUpdate
 
 
@@ -13,7 +13,8 @@ async def list_statements(offset: int = 0, limit: int = 20) -> list[Statement]:
 
 async def create_statement(data: StatementCreate) -> Statement:
     statement = Statement(
-        **data.model_dump(exclude_none=True), status=StatementStatus.PENDING
+        **data.model_dump(exclude_none=True),
+        created_at=datetime.now(timezone.utc),
     )
     db.session.add(statement)
     await db.session.commit()
@@ -34,6 +35,7 @@ async def update(statement_id: uuid.UUID, data: StatementUpdate) -> Statement:
     statement = await get_statement_by_id(statement_id)
     for field, value in data.model_dump(exclude_unset=True).items():
         setattr(statement, field, value)
+    statement.updated_at = datetime.now(timezone.utc)
     await db.session.commit()
     await db.session.refresh(statement)
     return statement

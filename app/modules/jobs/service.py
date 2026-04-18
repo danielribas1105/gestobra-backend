@@ -1,20 +1,39 @@
+from datetime import datetime, timezone
 import uuid
 
 from fastapi import HTTPException
 from fastapi_async_sqlalchemy import db
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from app.modules.jobs.model import Job
 from app.modules.jobs.schema import JobCreate, JobUpdate
-from app.modules.works.service import get_work_by_id
+from app.modules.statements.model import Statement
 
 
 async def list_jobs(offset: int = 0, limit: int = 20) -> list[Job]:
-    result = await db.session.execute(select(Job).offset(offset).limit(limit))
+    result = await db.session.execute(
+        select(Job)
+        .options(
+            selectinload(Job.origin_work),
+            selectinload(Job.destiny_work),
+            selectinload(Job.car),
+            selectinload(Job.driver),
+            selectinload(Job.creator),
+            selectinload(Job.statement),
+            selectinload(Job.statement).selectinload(Statement.material),
+        )
+        .offset(offset)
+        .limit(limit)
+    )
     return result.scalars().all()
 
 
 async def create_job(data: JobCreate, created_by: uuid.UUID) -> Job:
-    job = Job(**data.model_dump(exclude_none=True), created_by=created_by)
+    job = Job(
+        **data.model_dump(exclude_none=True),
+        created_by=created_by,
+        created_at=datetime.now(timezone.utc)
+    )
     db.session.add(job)
     await db.session.commit()
     await db.session.refresh(job)

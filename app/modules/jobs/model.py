@@ -41,6 +41,7 @@ class Job(SQLModel, table=True):
         sa_column=Column(
             String(50),
             nullable=False,
+            default=JobStatus.PENDING.value,
             server_default=JobStatus.PENDING.value,
         ),
     )

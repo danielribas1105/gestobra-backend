@@ -10,6 +10,7 @@ class StatementCreate(BaseModel):
     material_id: uuid.UUID
     m3: int
     active: bool = True
+    status: StatementStatus = StatementStatus.PENDING
 
 
 class StatementUpdate(BaseModel):

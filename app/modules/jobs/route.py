@@ -14,7 +14,26 @@ router = APIRouter(prefix="/jobs", tags=["Jobs"])
 async def list_jobs(
     offset: int = 0, limit: int = 20, user: User = Depends(get_current_user)
 ):
-    return await service.list_jobs(offset, limit)
+    jobs = await service.list_jobs(offset, limit)
+    return [
+        JobResponse(
+            **job.model_dump(),
+            origin_name=job.origin_work.name if job.origin_work else None,
+            destiny_name=job.destiny_work.name if job.destiny_work else None,
+            car_license=job.car.license if job.car else None,
+            driver_name=job.driver.name if job.driver else None,
+            creator_name=job.creator.name if job.creator else None,
+            statement_code=job.statement.code if job.statement else None,
+            material_name=(
+                job.statement.material.name
+                if job.statement and job.statement.material
+                else None
+            ),
+            value_m3=job.statement.material.value_m3 if job.statement else None,
+            m3=job.statement.m3 if job.statement else None,
+        )
+        for job in jobs
+    ]
 
 
 @router.post("", response_model=JobResponse, status_code=201)

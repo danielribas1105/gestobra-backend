@@ -2,7 +2,7 @@ from datetime import datetime
 import enum
 from typing import TYPE_CHECKING, Optional
 import uuid
-from sqlalchemy import Column, DateTime, Enum as SAEnum, String, func, text
+from sqlalchemy import Column, DateTime, String, func, text
 from sqlmodel import Relationship, SQLModel, Field
 
 if TYPE_CHECKING:
