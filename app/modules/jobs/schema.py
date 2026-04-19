@@ -29,7 +29,7 @@ class JobResponse(BaseModel):
     car_id: uuid.UUID
     created_by: uuid.UUID
     driver_id: uuid.UUID
-    status: JobStatus
+    status: Optional[str] = None
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
 
