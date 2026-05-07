@@ -12,7 +12,8 @@ if TYPE_CHECKING:
 class WorkStatus(str, enum.Enum):
     ATIVA = "active"
     INATIVA = "inactive"
-    PARALIZADA = "paralized"
+    PARALIZADA = "paralyzed"
+    BLOQUEADA = "blocked"
     FINALIZADA = "finished"
 
 
@@ -29,10 +30,9 @@ class Work(SQLModel, table=True):
     cnpj: Optional[str] = Field(default=None, nullable=True)
     description: Optional[str] = Field(default=None, nullable=True)
     address: Optional[str] = Field(default=None, nullable=True)
-    region: Optional[str] = Field(default=None, nullable=True)
+    zip_code: Optional[str] = Field(default=None, nullable=True)
     city: Optional[str] = Field(default=None, nullable=True)
     state: Optional[str] = Field(default=None, nullable=True)
-    active: bool = Field(default=True)
     status: WorkStatus = Field(
         default=WorkStatus.ATIVA,
         sa_column=Column(
