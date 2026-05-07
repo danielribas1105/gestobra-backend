@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 import uuid
 from pydantic import BaseModel, ConfigDict
 
@@ -14,16 +15,16 @@ class StatementCreate(BaseModel):
 
 
 class StatementUpdate(BaseModel):
-    code: str | None = None
-    material_id: uuid.UUID | None = None
-    m3: int | None = None
-    active: bool | None = None
-    status: StatementStatus | None = None
+    code: Optional[str] = None
+    material_id: Optional[uuid.UUID] = None
+    m3: Optional[int] = None
+    active: Optional[bool] = None
+    status: Optional[StatementStatus] = None
 
 
 class StatementResponse(BaseModel):
     id: uuid.UUID
-    code: str
+    code: Optional[str] = None
     material_id: uuid.UUID
     m3: int
     active: bool

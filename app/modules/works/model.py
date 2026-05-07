@@ -3,7 +3,7 @@ import enum
 from typing import TYPE_CHECKING, List, Optional
 import uuid
 from sqlmodel import Relationship, SQLModel, Field
-from sqlalchemy import Column, DateTime, Enum as SAEnum, String, func, text
+from sqlalchemy import Column, DateTime, String, func, text
 
 if TYPE_CHECKING:
     from app.modules.jobs.model import Job
@@ -24,7 +24,9 @@ class Work(SQLModel, table=True):
         primary_key=True,
         sa_column_kwargs={"server_default": text("gen_random_uuid()")},
     )
+    code: str = Field(index=True)
     name: str = Field(index=True)
+    cnpj: Optional[str] = Field(default=None, nullable=True)
     description: Optional[str] = Field(default=None, nullable=True)
     address: Optional[str] = Field(default=None, nullable=True)
     region: Optional[str] = Field(default=None, nullable=True)
@@ -43,7 +45,6 @@ class Work(SQLModel, table=True):
         default=None,
         sa_column=Column(DateTime(timezone=True), server_default=func.now()),
     )
-    image: Optional[str] = Field(default=None, nullable=True)
 
     # Relationship
     jobs_origin: List["Job"] = Relationship(

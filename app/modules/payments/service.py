@@ -2,11 +2,59 @@ import uuid
 from fastapi import HTTPException
 from fastapi_async_sqlalchemy import db
 from sqlmodel import select
+from sqlalchemy import func, case
 from app.modules.payments.model import Payment, PaymentStatus
-from app.modules.payments.schema import PaymentUpdate
+from app.modules.payments.schema import PaymentUpdate, PaymentsTotalValues
 from app.modules.jobs.model import Job, JobStatus
 from app.modules.statements.model import Statement
 from app.modules.materials.model import Material
+
+
+async def list_payments(offset: int = 0, limit: int = 20) -> list[Payment]:
+    result = await db.session.execute(select(Payment).offset(offset).limit(limit))
+    return result.scalars().all()
+
+
+async def payments_total_values() -> PaymentsTotalValues:
+    result = await db.session.execute(
+        select(
+            func.coalesce(
+                func.sum(
+                    case(
+                        (Payment.status == PaymentStatus.PAID, Payment.total),
+                        else_=0,
+                    )
+                ),
+                0,
+            ).label("paid"),
+            func.coalesce(
+                func.sum(
+                    case(
+                        (Payment.status == PaymentStatus.PENDING, Payment.total),
+                        else_=0,
+                    )
+                ),
+                0,
+            ).label("pending"),
+            func.coalesce(
+                func.sum(
+                    case(
+                        (Payment.status == PaymentStatus.CANCELED, Payment.total),
+                        else_=0,
+                    )
+                ),
+                0,
+            ).label("canceled"),
+        )
+    )
+
+    row = result.mappings().one()
+
+    return PaymentsTotalValues(
+        paid=row["paid"],
+        pending=row["pending"],
+        canceled=row["canceled"],
+    )
 
 
 async def generate_payment(job_id: uuid.UUID) -> Payment:

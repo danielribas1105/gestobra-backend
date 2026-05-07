@@ -26,7 +26,7 @@ class Statement(SQLModel, table=True):
         primary_key=True,
         sa_column_kwargs={"server_default": text("gen_random_uuid()")},
     )
-    code: str = Field(index=True)
+    code: Optional[str] = Field(default=None)
     material_id: uuid.UUID = Field(
         foreign_key="materials.id", nullable=False, index=True
     )

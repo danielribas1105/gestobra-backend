@@ -19,3 +19,9 @@ class PaymentResponse(BaseModel):
 
 class PaymentUpdate(BaseModel):
     status: PaymentStatus | None = None
+
+
+class PaymentsTotalValues(BaseModel):
+    paid: float
+    pending: float
+    canceled: float

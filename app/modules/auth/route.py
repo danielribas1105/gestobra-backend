@@ -23,7 +23,7 @@ async def login(data: LoginRequest) -> Token:
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail="Algo errado! Verifique e-mail e senha.",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -95,7 +95,7 @@ async def login_for_access_token(
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail="Usuário não autorizado.",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
