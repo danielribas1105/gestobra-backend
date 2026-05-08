@@ -29,7 +29,10 @@ class Job(SQLModel, table=True):
         sa_column_kwargs={"server_default": text("gen_random_uuid()")},
     )
     statement_id: uuid.UUID = Field(
-        foreign_key="statements.id", unique=True, nullable=False
+        unique=True,
+        default=None,
+        foreign_key="statements.id",
+        nullable=True,
     )
     origin: uuid.UUID = Field(foreign_key="works.id", nullable=False, index=True)
     destiny: uuid.UUID = Field(foreign_key="works.id", nullable=False, index=True)

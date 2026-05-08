@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Optional
 import uuid
 from pydantic import BaseModel, ConfigDict
 
@@ -7,7 +7,7 @@ from app.modules.jobs.model import JobStatus
 
 
 class JobCreate(BaseModel):
-    statement_id: uuid.UUID
+    statement_id: Optional[uuid.UUID] = None
     origin: uuid.UUID
     destiny: uuid.UUID
     car_id: uuid.UUID
@@ -16,6 +16,7 @@ class JobCreate(BaseModel):
 
 
 class JobUpdate(BaseModel):
+    statement_id: Optional[uuid.UUID] = None
     driver_id: Optional[uuid.UUID] = None
     car_id: Optional[uuid.UUID] = None
     status: Optional[JobStatus] = None
@@ -23,7 +24,7 @@ class JobUpdate(BaseModel):
 
 class JobResponse(BaseModel):
     id: uuid.UUID
-    statement_id: uuid.UUID
+    statement_id: Optional[uuid.UUID] = None
     origin: uuid.UUID
     destiny: uuid.UUID
     car_id: uuid.UUID
