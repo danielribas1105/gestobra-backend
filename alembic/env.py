@@ -13,6 +13,7 @@ from app.config import settings
 from app.modules.user.model import User
 from app.modules.auth.model import UserSession
 from app.modules.car.model import Car
+from app.modules.carriers.model import Carrier
 from app.modules.jobs.model import Job
 from app.modules.materials.model import Material
 from app.modules.payments.model import Payment
