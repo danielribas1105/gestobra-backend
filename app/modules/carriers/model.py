@@ -30,4 +30,4 @@ class Carrier(SQLModel, table=True):
     )
 
     # Relationship
-    jobs: List["Job"] = Relationship(back_populates="carriers")
+    jobs: List["Job"] = Relationship(back_populates="carrier")
