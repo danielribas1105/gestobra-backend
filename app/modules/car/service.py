@@ -10,7 +10,6 @@ from app.modules.car.schema import CarCreate, CarUpdate
 async def list_cars(offset: int = 0, limit: int = 20) -> list[Car]:
     result = await db.session.execute(select(Car).offset(offset).limit(limit))
     cars = result.scalars().all()
-    print(f"Cars {cars}")
     return cars
 
 
