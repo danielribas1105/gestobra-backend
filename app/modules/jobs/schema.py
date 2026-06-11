@@ -11,6 +11,7 @@ class JobCreate(BaseModel):
     origin: uuid.UUID
     destiny: uuid.UUID
     car_id: uuid.UUID
+    carrier_id: uuid.UUID
     driver_id: uuid.UUID
     status: JobStatus = JobStatus.PENDING
 
@@ -28,6 +29,7 @@ class JobResponse(BaseModel):
     origin: uuid.UUID
     destiny: uuid.UUID
     car_id: uuid.UUID
+    carrier_id: uuid.UUID
     created_by: uuid.UUID
     driver_id: uuid.UUID
     status: Optional[str] = None
@@ -42,6 +44,7 @@ class JobResponse(BaseModel):
     origin_name: Optional[str] = None
     destiny_name: Optional[str] = None
     car_license: Optional[str] = None
+    carrier_name: Optional[str] = None
     driver_name: Optional[str] = None
     creator_name: Optional[str] = None
 
