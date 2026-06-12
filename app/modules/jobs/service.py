@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from typing import Optional
 import uuid
 
 from fastapi import HTTPException
@@ -86,3 +87,19 @@ async def list_jobs_by_work_origin(work_id: uuid.UUID) -> list[Job]:
         )
     )
     return result.scalars().all()
+
+
+async def get_job_by_statement_id(statement_id: uuid.UUID) -> Optional[Job]:
+    result = await db.session.execute(
+        select(Job)
+        .where(Job.statement_id == statement_id)
+        .options(
+            selectinload(Job.origin_work),
+            selectinload(Job.destiny_work),
+            selectinload(Job.car),
+            selectinload(Job.driver),
+            selectinload(Job.creator),
+            selectinload(Job.statement).selectinload(Statement.material),
+        )
+    )
+    return result.scalars().first()
