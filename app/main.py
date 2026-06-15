@@ -6,7 +6,6 @@ from app import router
 from app.config import settings
 from app.modules.fleet.websocket import fleet_ws
 
-
 app = FastAPI(
     title="GestObra API",
     description="API GestObra Web Application",
@@ -16,7 +15,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # URL do Next.js em dev
+    allow_origins=[
+        "https://gestobra-six.vercel.app",
+        "http://localhost:3000",
+    ],  # URL do Next.js em dev
     allow_credentials=True,  # necessário para cookies HttpOnly
     allow_methods=["*"],
     allow_headers=["*"],
