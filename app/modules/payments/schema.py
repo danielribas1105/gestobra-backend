@@ -18,6 +18,8 @@ class PaymentResponse(BaseModel):
 
 
 class PaymentUpdate(BaseModel):
+    m3: int | None = None
+    value_m3: float | None = None
     status: PaymentStatus | None = None
 
 
@@ -25,3 +27,12 @@ class PaymentsTotalValues(BaseModel):
     paid: float
     pending: float
     canceled: float
+
+
+class CarPaymentSummary(BaseModel):
+    license: str
+    model: str
+    pending: float
+    paid: float
+    canceled: float
+    total: float

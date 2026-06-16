@@ -3,8 +3,13 @@ from fastapi import HTTPException
 from fastapi_async_sqlalchemy import db
 from sqlmodel import select
 from sqlalchemy import func, case
+from app.modules.car.model import Car
 from app.modules.payments.model import Payment, PaymentStatus
-from app.modules.payments.schema import PaymentUpdate, PaymentsTotalValues
+from app.modules.payments.schema import (
+    CarPaymentSummary,
+    PaymentUpdate,
+    PaymentsTotalValues,
+)
 from app.modules.jobs.model import Job, JobStatus
 from app.modules.statements.model import Statement
 from app.modules.materials.model import Material
@@ -13,6 +18,23 @@ from app.modules.materials.model import Material
 async def list_payments(offset: int = 0, limit: int = 20) -> list[Payment]:
     result = await db.session.execute(select(Payment).offset(offset).limit(limit))
     return result.scalars().all()
+
+
+async def get_payment_by_id(payment_id: uuid.UUID) -> Payment | None:
+    result = await db.session.execute(select(Payment).where(Payment.id == payment_id))
+    return result.scalars().first()
+
+
+async def update(payment_id: uuid.UUID, data: PaymentUpdate) -> Payment:
+    payment = await get_payment_by_id(payment_id)
+    if not payment:
+        raise HTTPException(status_code=404, detail="Pagamento não encontrado")
+
+    for field, value in data.model_dump(exclude_unset=True).items():
+        setattr(payment, field, value)
+    await db.session.commit()
+    await db.session.refresh(payment)
+    return payment
 
 
 async def payments_total_values() -> PaymentsTotalValues:
@@ -111,14 +133,63 @@ async def get_payment_by_job(job_id: uuid.UUID) -> Payment | None:
     return result.scalars().first()
 
 
-async def update_payment(payment_id: uuid.UUID, data: PaymentUpdate) -> Payment:
-    result = await db.session.execute(select(Payment).where(Payment.id == payment_id))
-    payment = result.scalars().first()
-    if not payment:
-        raise HTTPException(status_code=404, detail="Pagamento não encontrado")
+async def get_sum_payments_by_car() -> list[CarPaymentSummary]:
+    result = await db.session.execute(
+        select(
+            Car.license,
+            Car.model,
+            func.coalesce(
+                func.sum(
+                    case(
+                        (Payment.status == PaymentStatus.PENDING, Payment.total),
+                        else_=0,
+                    )
+                ),
+                0,
+            ).label("pending"),
+            func.coalesce(
+                func.sum(
+                    case((Payment.status == PaymentStatus.PAID, Payment.total), else_=0)
+                ),
+                0,
+            ).label("paid"),
+            func.coalesce(
+                func.sum(
+                    case(
+                        (Payment.status == PaymentStatus.CANCELED, Payment.total),
+                        else_=0,
+                    )
+                ),
+                0,
+            ).label("canceled"),
+            func.coalesce(func.sum(Payment.total), 0).label("total"),
+        )
+        .join(Job, Job.car_id == Car.id)
+        .join(Payment, Payment.job_id == Job.id)
+        .group_by(Car.license, Car.model)
+        .order_by(Car.license)
+    )
 
-    for field, value in data.model_dump(exclude_unset=True).items():
-        setattr(payment, field, value)
-    await db.session.commit()
-    await db.session.refresh(payment)
-    return payment
+    rows = result.mappings().all()
+    return [
+        CarPaymentSummary(
+            license=row["license"],
+            model=row["model"],
+            pending=row["pending"],
+            paid=row["paid"],
+            canceled=row["canceled"],
+            total=row["total"],
+        )
+        for row in rows
+    ]
+
+
+async def get_payments_by_license(license: str) -> list[Payment]:
+    result = await db.session.execute(
+        select(Payment)
+        .join(Job, Job.id == Payment.job_id)
+        .join(Car, Car.id == Job.car_id)
+        .where(Car.license == license)
+        .order_by(Payment.created_at.desc())
+    )
+    return result.scalars().all()

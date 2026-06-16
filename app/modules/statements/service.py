@@ -1,7 +1,9 @@
 from datetime import datetime, timezone
+from typing import Optional
 import uuid
 from fastapi_async_sqlalchemy import db
 from sqlmodel import select
+from app.modules.jobs.model import Job
 from app.modules.statements.model import Statement
 from app.modules.statements.schema import StatementCreate, StatementUpdate
 
@@ -45,3 +47,12 @@ async def delete(statement_id: uuid.UUID) -> None:
     statement = await get_statement_by_id(statement_id)
     await db.session.delete(statement)
     await db.session.commit()
+
+
+async def get_statement_by_job_id(job_id: uuid.UUID) -> Optional[Statement]:
+    result = await db.session.execute(
+        select(Statement)
+        .join(Job, Job.statement_id == Statement.id)
+        .where(Job.id == job_id)
+    )
+    return result.scalars().first()
