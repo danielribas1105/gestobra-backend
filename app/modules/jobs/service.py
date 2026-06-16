@@ -9,6 +9,8 @@ from sqlalchemy.orm import selectinload
 from app.modules.jobs.model import Job
 from app.modules.jobs.schema import JobCreate, JobUpdate
 from app.modules.statements.model import Statement
+from app.modules.materials.model import Material
+from app.modules.payments.model import Payment, PaymentStatus
 
 
 async def list_jobs(offset: int = 0, limit: int = 20) -> list[Job]:
@@ -30,13 +32,50 @@ async def list_jobs(offset: int = 0, limit: int = 20) -> list[Job]:
 
 
 async def create_job(data: JobCreate, created_by: uuid.UUID) -> Job:
-    print(f"job {data}")
     job = Job(
         **data.model_dump(exclude_none=True),
         created_by=created_by,
         created_at=datetime.now(timezone.utc),
     )
     db.session.add(job)
+    await db.session.flush()  # gera o job.id sem fechar a transação
+
+    if data.statement_id:
+        statement = (
+            (
+                await db.session.execute(
+                    select(Statement).where(Statement.id == data.statement_id)
+                )
+            )
+            .scalars()
+            .first()
+        )
+
+        if not statement:
+            raise HTTPException(status_code=404, detail="Medição não encontrada")
+
+        material = (
+            (
+                await db.session.execute(
+                    select(Material).where(Material.id == statement.material_id)
+                )
+            )
+            .scalars()
+            .first()
+        )
+
+        if not material:
+            raise HTTPException(status_code=404, detail="Material não encontrado")
+
+        payment = Payment(
+            job_id=job.id,
+            m3=statement.m3,
+            value_m3=material.value_m3,
+            total=statement.m3 * material.value_m3,
+            status=PaymentStatus.PENDING,
+        )
+        db.session.add(payment)
+
     await db.session.commit()
     await db.session.refresh(job)
     return job

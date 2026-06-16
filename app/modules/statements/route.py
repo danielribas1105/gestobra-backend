@@ -57,3 +57,13 @@ async def delete_statement(
     if not statement:
         raise HTTPException(status_code=404, detail="Manifesto não encontrado")
     await service.delete(statement_id)
+
+
+@router.get("/by-job/{job_id}", response_model=StatementResponse)
+async def get_statement_by_job(
+    job_id: uuid.UUID, user: User = Depends(get_current_user)
+):
+    statement = await service.get_statement_by_job_id(job_id)
+    if not statement:
+        raise HTTPException(status_code=404, detail="Pagamento não encontrado")
+    return statement
