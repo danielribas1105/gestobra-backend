@@ -13,6 +13,19 @@ async def list_statements(offset: int = 0, limit: int = 20) -> list[Statement]:
     return result.scalars().all()
 
 
+async def list_statements_without_job(
+    offset: int = 0, limit: int = 20
+) -> list[Statement]:
+    result = await db.session.execute(
+        select(Statement)
+        .outerjoin(Job, Job.statement_id == Statement.id)
+        .where(Job.id.is_(None))
+        .offset(offset)
+        .limit(limit)
+    )
+    return result.scalars().all()
+
+
 async def create_statement(data: StatementCreate) -> Statement:
     statement = Statement(
         **data.model_dump(exclude_none=True),

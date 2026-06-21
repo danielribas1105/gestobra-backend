@@ -4,6 +4,7 @@ from app.modules.auth.service import get_current_user
 from app.modules.user.model import User
 from app.modules.payments.schema import (
     CarPaymentSummary,
+    PaymentBatchUpdate,
     PaymentResponse,
     PaymentUpdate,
     PaymentsTotalValues,
@@ -29,11 +30,9 @@ async def update(
     return await service.update(payment_id, data)
 
 
-@router.delete("/{material_id}", status_code=204)
-async def delete_material(
-    material_id: uuid.UUID, user: User = Depends(get_current_user)
-):
-    await service.delete(material_id)
+@router.delete("/{payment_id}", status_code=204)
+async def delete_payment(payment_id: uuid.UUID, user: User = Depends(get_current_user)):
+    await service.delete(payment_id)
 
 
 @router.get("/values", response_model=PaymentsTotalValues)
@@ -49,13 +48,21 @@ async def get_payment_by_job(job_id: uuid.UUID, user: User = Depends(get_current
     return payment
 
 
+@router.patch("/batch-status", response_model=list[PaymentResponse])
+async def batch_update_status(
+    data: PaymentBatchUpdate,
+    user: User = Depends(get_current_user),
+):
+    return await service.batch_update_status(data)
+
+
 @router.patch("/{payment_id}", response_model=PaymentResponse)
 async def update_payment(
     payment_id: uuid.UUID,
     data: PaymentUpdate,
     user: User = Depends(get_current_user),
 ):
-    return await service.update_payment(payment_id, data)
+    return await service.update(payment_id, data)
 
 
 @router.get("/summary/by-car", response_model=list[CarPaymentSummary])
