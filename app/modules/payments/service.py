@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime, timezone
 from fastapi import HTTPException
 from fastapi_async_sqlalchemy import db
 from sqlmodel import select
@@ -7,6 +8,8 @@ from app.modules.car.model import Car
 from app.modules.payments.model import Payment, PaymentStatus
 from app.modules.payments.schema import (
     CarPaymentSummary,
+    PaymentBatchUpdate,
+    PaymentResponse,
     PaymentUpdate,
     PaymentsTotalValues,
 )
@@ -35,6 +38,14 @@ async def update(payment_id: uuid.UUID, data: PaymentUpdate) -> Payment:
     await db.session.commit()
     await db.session.refresh(payment)
     return payment
+
+
+async def delete(payment_id: uuid.UUID) -> None:
+    payment = await get_payment_by_id(payment_id)
+    if not payment:
+        raise HTTPException(status_code=404, detail="Pagamento não encontrado")
+    await db.session.delete(payment)
+    await db.session.commit()
 
 
 async def payments_total_values() -> PaymentsTotalValues:
@@ -193,3 +204,29 @@ async def get_payments_by_license(license: str) -> list[Payment]:
         .order_by(Payment.created_at.desc())
     )
     return result.scalars().all()
+
+
+async def batch_update_status(data: PaymentBatchUpdate) -> list[PaymentResponse]:
+    ids = [item.id for item in data.updates]
+
+    result = await db.session.execute(select(Payment).where(Payment.id.in_(ids)))
+    payments = {p.id: p for p in result.scalars().all()}
+
+    missing = [str(id) for id in ids if id not in payments]
+    if missing:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Pagamentos não encontrados: {', '.join(missing)}",
+        )
+
+    for item in data.updates:
+        payment = payments[item.id]
+        payment.status = item.status
+        payment.updated_at = item.updated_at or datetime.now(timezone.utc)
+
+    await db.session.commit()
+
+    for payment in payments.values():
+        await db.session.refresh(payment)
+
+    return [PaymentResponse.model_validate(payments[id]) for id in ids]

@@ -23,6 +23,16 @@ class PaymentUpdate(BaseModel):
     status: PaymentStatus | None = None
 
 
+class PaymentBatchUpdateItem(BaseModel):
+    id: uuid.UUID
+    status: PaymentStatus
+    updated_at: datetime | None = None
+
+
+class PaymentBatchUpdate(BaseModel):
+    updates: list[PaymentBatchUpdateItem]
+
+
 class PaymentsTotalValues(BaseModel):
     paid: float
     pending: float
