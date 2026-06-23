@@ -94,8 +94,65 @@ async def update(job_id: uuid.UUID, data: JobUpdate) -> Job:
         raise HTTPException(
             status_code=404, detail="Movimentação entre obras, não encontrada"
         )
+
+    old_statement_id = job.statement_id
+
     for field, value in data.model_dump(exclude_unset=True).items():
         setattr(job, field, value)
+
+    new_statement_id = (
+        data.statement_id if "statement_id" in data.model_fields_set else None
+    )
+
+    if new_statement_id and new_statement_id != old_statement_id:
+        statement = (
+            (
+                await db.session.execute(
+                    select(Statement).where(Statement.id == new_statement_id)
+                )
+            )
+            .scalars()
+            .first()
+        )
+
+        if not statement:
+            raise HTTPException(status_code=404, detail="MTR não encontrado")
+
+        material = (
+            (
+                await db.session.execute(
+                    select(Material).where(Material.id == statement.material_id)
+                )
+            )
+            .scalars()
+            .first()
+        )
+
+        if not material:
+            raise HTTPException(status_code=404, detail="Material não encontrado")
+
+        # Busca payment existente para este job
+        existing_payment_result = await db.session.execute(
+            select(Payment).where(Payment.job_id == job.id)
+        )
+        existing_payment = existing_payment_result.scalars().first()
+
+        if existing_payment:
+            # Atualiza o payment existente
+            existing_payment.m3 = statement.m3
+            existing_payment.value_m3 = material.value_m3
+            existing_payment.total = statement.m3 * material.value_m3
+        else:
+            # Cria um novo payment
+            new_payment = Payment(
+                job_id=job.id,
+                m3=statement.m3,
+                value_m3=material.value_m3,
+                total=statement.m3 * material.value_m3,
+                status=PaymentStatus.PENDING,
+            )
+            db.session.add(new_payment)
+
     await db.session.commit()
     await db.session.refresh(job)
     return job
