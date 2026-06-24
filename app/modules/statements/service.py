@@ -2,10 +2,15 @@ from datetime import datetime, timezone
 from typing import Optional
 import uuid
 from fastapi_async_sqlalchemy import db
+from sqlalchemy import case, func
 from sqlmodel import select
 from app.modules.jobs.model import Job
-from app.modules.statements.model import Statement
-from app.modules.statements.schema import StatementCreate, StatementUpdate
+from app.modules.statements.model import Statement, StatementStatus
+from app.modules.statements.schema import (
+    StatementCreate,
+    StatementUpdate,
+    StatementsCount,
+)
 
 
 async def list_statements(offset: int = 0, limit: int = 20) -> list[Statement]:
@@ -69,3 +74,55 @@ async def get_statement_by_job_id(job_id: uuid.UUID) -> Optional[Statement]:
         .where(Job.id == job_id)
     )
     return result.scalars().first()
+
+
+async def count_statements() -> StatementsCount:
+    result = await db.session.execute(
+        select(
+            func.coalesce(
+                func.sum(
+                    case(
+                        (Statement.status == StatementStatus.APPROVED, 1),
+                        else_=0,
+                    )
+                ),
+                0,
+            ).label("approved"),
+            func.coalesce(
+                func.sum(
+                    case(
+                        (Statement.status == StatementStatus.PENDING, 1),
+                        else_=0,
+                    )
+                ),
+                0,
+            ).label("pending"),
+            func.coalesce(
+                func.sum(
+                    case(
+                        (Statement.status == StatementStatus.REJECTED, 1),
+                        else_=0,
+                    )
+                ),
+                0,
+            ).label("rejected"),
+            func.coalesce(
+                func.sum(
+                    case(
+                        (Statement.status == StatementStatus.CONCLUDED, 1),
+                        else_=0,
+                    )
+                ),
+                0,
+            ).label("concluded"),
+        ).select_from(Statement)
+    )
+
+    row = result.mappings().one()
+
+    return StatementsCount(
+        approved=row["approved"],
+        pending=row["pending"],
+        rejected=row["rejected"],
+        concluded=row["concluded"],
+    )

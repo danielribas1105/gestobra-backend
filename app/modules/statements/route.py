@@ -7,6 +7,7 @@ from app.modules.statements.schema import (
     StatementCreate,
     StatementResponse,
     StatementUpdate,
+    StatementsCount,
 )
 from app.modules.statements import service
 
@@ -19,6 +20,11 @@ async def list_statements(
     offset: int = 0, limit: int = 20, user: User = Depends(get_current_user)
 ):
     return await service.list_statements_without_job(offset, limit)
+
+
+@router.get("/count-statements", response_model=StatementsCount)
+async def get_count_statements(user: User = Depends(get_current_user)):
+    return await service.count_statements()
 
 
 @router.get("/by-job/{job_id}", response_model=StatementResponse)

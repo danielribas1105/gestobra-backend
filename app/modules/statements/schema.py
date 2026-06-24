@@ -33,3 +33,10 @@ class StatementResponse(BaseModel):
     updated_at: datetime | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class StatementsCount(BaseModel):
+    approved: int
+    pending: int
+    rejected: int
+    concluded: int

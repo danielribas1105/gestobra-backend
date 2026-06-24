@@ -49,3 +49,10 @@ class JobResponse(BaseModel):
     creator_name: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class JobsCount(BaseModel):
+    pending: int
+    in_progress: int
+    completed: int
+    canceled: int

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from app.modules.auth.dependencies import require_admin
 from app.modules.auth.service import get_current_user
 from app.modules.user.model import User
-from app.modules.jobs.schema import JobCreate, JobResponse, JobUpdate
+from app.modules.jobs.schema import JobCreate, JobResponse, JobUpdate, JobsCount
 from app.modules.jobs import service
 
 router = APIRouter(prefix="/jobs", tags=["Jobs"])
@@ -114,6 +114,11 @@ async def get_job_by_statement(
         value_m3=job.statement.material.value_m3 if job.statement else None,
         m3=job.statement.m3 if job.statement else None,
     )
+
+
+@router.get("/count-jobs", response_model=JobsCount)
+async def get_count_jobs(user: User = Depends(get_current_user)):
+    return await service.count_jobs()
 
 
 @router.get("/{job_id}", response_model=JobResponse)

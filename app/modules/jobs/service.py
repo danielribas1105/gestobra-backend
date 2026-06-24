@@ -4,10 +4,10 @@ import uuid
 
 from fastapi import HTTPException
 from fastapi_async_sqlalchemy import db
-from sqlalchemy import select
+from sqlalchemy import case, func, select
 from sqlalchemy.orm import selectinload
-from app.modules.jobs.model import Job
-from app.modules.jobs.schema import JobCreate, JobUpdate
+from app.modules.jobs.model import Job, JobStatus
+from app.modules.jobs.schema import JobCreate, JobUpdate, JobsCount
 from app.modules.statements.model import Statement
 from app.modules.materials.model import Material
 from app.modules.payments.model import Payment, PaymentStatus
@@ -199,3 +199,55 @@ async def get_job_by_statement_id(statement_id: uuid.UUID) -> Optional[Job]:
         )
     )
     return result.scalars().first()
+
+
+async def count_jobs() -> JobsCount:
+    result = await db.session.execute(
+        select(
+            func.coalesce(
+                func.sum(
+                    case(
+                        (Job.status == JobStatus.COMPLETED, 1),
+                        else_=0,
+                    )
+                ),
+                0,
+            ).label("completed"),
+            func.coalesce(
+                func.sum(
+                    case(
+                        (Job.status == JobStatus.IN_PROGRESS, 1),
+                        else_=0,
+                    )
+                ),
+                0,
+            ).label("in_progress"),
+            func.coalesce(
+                func.sum(
+                    case(
+                        (Job.status == JobStatus.PENDING, 1),
+                        else_=0,
+                    )
+                ),
+                0,
+            ).label("pending"),
+            func.coalesce(
+                func.sum(
+                    case(
+                        (Job.status == JobStatus.CANCELED, 1),
+                        else_=0,
+                    )
+                ),
+                0,
+            ).label("canceled"),
+        ).select_from(Job)
+    )
+
+    row = result.mappings().one()
+
+    return JobsCount(
+        completed=row["completed"],
+        in_progress=row["in_progress"],
+        pending=row["pending"],
+        canceled=row["canceled"],
+    )
