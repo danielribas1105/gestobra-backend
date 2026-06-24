@@ -35,7 +35,7 @@ async def delete_payment(payment_id: uuid.UUID, user: User = Depends(get_current
     await service.delete(payment_id)
 
 
-@router.get("/values", response_model=PaymentsTotalValues)
+@router.get("/sum-values", response_model=PaymentsTotalValues)
 async def payments_values(user: User = Depends(get_current_user)):
     return await service.payments_total_values()
 

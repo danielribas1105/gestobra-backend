@@ -11,10 +11,9 @@ if TYPE_CHECKING:
 
 
 class StatementStatus(str, enum.Enum):
-    PENDING = "pending"
     APPROVED = "approved"
+    PENDING = "pending"
     REJECTED = "rejected"
-    INPROGRESS = "in_progress"
     CONCLUDED = "concluded"
 
 
