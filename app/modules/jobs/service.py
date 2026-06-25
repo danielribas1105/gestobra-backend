@@ -207,12 +207,12 @@ async def count_jobs() -> JobsCount:
             func.coalesce(
                 func.sum(
                     case(
-                        (Job.status == JobStatus.COMPLETED, 1),
+                        (Job.status == JobStatus.CONCLUDED, 1),
                         else_=0,
                     )
                 ),
                 0,
-            ).label("completed"),
+            ).label("concluded"),
             func.coalesce(
                 func.sum(
                     case(
@@ -246,7 +246,7 @@ async def count_jobs() -> JobsCount:
     row = result.mappings().one()
 
     return JobsCount(
-        completed=row["completed"],
+        concluded=row["concluded"],
         in_progress=row["in_progress"],
         pending=row["pending"],
         canceled=row["canceled"],

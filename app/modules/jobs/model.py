@@ -15,9 +15,9 @@ if TYPE_CHECKING:
 
 
 class JobStatus(str, enum.Enum):
-    PENDING = "pending"
+    CONCLUDED = "concluded"
     IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
+    PENDING = "pending"
     CANCELED = "canceled"
 
 

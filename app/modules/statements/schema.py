@@ -36,7 +36,7 @@ class StatementResponse(BaseModel):
 
 
 class StatementsCount(BaseModel):
-    approved: int
-    pending: int
-    rejected: int
     concluded: int
+    in_progress: int
+    pending: int
+    canceled: int

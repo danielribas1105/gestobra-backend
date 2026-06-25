@@ -52,7 +52,7 @@ class JobResponse(BaseModel):
 
 
 class JobsCount(BaseModel):
-    pending: int
+    concluded: int
     in_progress: int
-    completed: int
+    pending: int
     canceled: int
