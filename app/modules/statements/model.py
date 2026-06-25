@@ -11,10 +11,10 @@ if TYPE_CHECKING:
 
 
 class StatementStatus(str, enum.Enum):
-    APPROVED = "approved"
-    PENDING = "pending"
-    REJECTED = "rejected"
     CONCLUDED = "concluded"
+    IN_PROGRESS = "in_progress"
+    PENDING = "pending"
+    CANCELED = "canceled"
 
 
 class Statement(SQLModel, table=True):

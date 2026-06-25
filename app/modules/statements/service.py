@@ -82,12 +82,21 @@ async def count_statements() -> StatementsCount:
             func.coalesce(
                 func.sum(
                     case(
-                        (Statement.status == StatementStatus.APPROVED, 1),
+                        (Statement.status == StatementStatus.CONCLUDED, 1),
                         else_=0,
                     )
                 ),
                 0,
-            ).label("approved"),
+            ).label("concluded"),
+            func.coalesce(
+                func.sum(
+                    case(
+                        (Statement.status == StatementStatus.IN_PROGRESS, 1),
+                        else_=0,
+                    )
+                ),
+                0,
+            ).label("in_progress"),
             func.coalesce(
                 func.sum(
                     case(
@@ -100,29 +109,20 @@ async def count_statements() -> StatementsCount:
             func.coalesce(
                 func.sum(
                     case(
-                        (Statement.status == StatementStatus.REJECTED, 1),
+                        (Statement.status == StatementStatus.CANCELED, 1),
                         else_=0,
                     )
                 ),
                 0,
-            ).label("rejected"),
-            func.coalesce(
-                func.sum(
-                    case(
-                        (Statement.status == StatementStatus.CONCLUDED, 1),
-                        else_=0,
-                    )
-                ),
-                0,
-            ).label("concluded"),
+            ).label("canceled"),
         ).select_from(Statement)
     )
 
     row = result.mappings().one()
 
     return StatementsCount(
-        approved=row["approved"],
-        pending=row["pending"],
-        rejected=row["rejected"],
         concluded=row["concluded"],
+        in_progress=row["in_progress"],
+        pending=row["pending"],
+        canceled=row["canceled"],
     )

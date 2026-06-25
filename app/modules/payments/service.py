@@ -101,7 +101,7 @@ async def generate_payment(job_id: uuid.UUID) -> Payment:
     if not job:
         raise HTTPException(status_code=404, detail="Job não encontrado")
 
-    if job.status != JobStatus.COMPLETED:
+    if job.status != JobStatus.CONCLUDED:
         raise HTTPException(status_code=400, detail="Job ainda não concluído")
 
     statement = (
