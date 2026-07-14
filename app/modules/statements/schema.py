@@ -8,16 +8,12 @@ from app.modules.statements.model import StatementStatus
 
 class StatementCreate(BaseModel):
     code: str
-    material_id: uuid.UUID
-    m3: int
     active: bool = True
     status: StatementStatus = StatementStatus.PENDING
 
 
 class StatementUpdate(BaseModel):
     code: Optional[str] = None
-    material_id: Optional[uuid.UUID] = None
-    m3: Optional[int] = None
     active: Optional[bool] = None
     status: Optional[StatementStatus] = None
 
@@ -25,8 +21,6 @@ class StatementUpdate(BaseModel):
 class StatementResponse(BaseModel):
     id: uuid.UUID
     code: Optional[str] = None
-    material_id: uuid.UUID
-    m3: int
     active: bool
     status: StatementStatus
     created_at: datetime | None = None

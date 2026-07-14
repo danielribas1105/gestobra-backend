@@ -3,10 +3,8 @@ import uuid
 from sqlalchemy import text
 from sqlmodel import Relationship, SQLModel, Field
 
-from app.modules.statements.model import Statement
-
 if TYPE_CHECKING:
-    from app.modules.statements.model import Statement
+    from app.modules.jobs.model import Job
 
 
 class Material(SQLModel, table=True):
@@ -17,10 +15,13 @@ class Material(SQLModel, table=True):
         primary_key=True,
         sa_column_kwargs={"server_default": text("gen_random_uuid()")},
     )
+    code: Optional[str] = Field(default=None)
     name: str = Field(nullable=False)
-    description: Optional[str] = Field(default=None)
-    value_m3: float = Field(nullable=False)
+    state: Optional[str] = Field(default=None)
+    material_class: Optional[str] = Field(default=None)
+    packaging: Optional[str] = Field(default=None)
+    technology: Optional[str] = Field(default=None)
 
     # Relationship
-    # A material can appear in multiple statements
-    statements: List["Statement"] = Relationship(back_populates="material")
+    # A material can appear in multiple jobs
+    jobs: List["Job"] = Relationship(back_populates="material")

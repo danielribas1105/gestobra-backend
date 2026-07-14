@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from typing import Optional
 import uuid
+from fastapi import HTTPException
 from fastapi_async_sqlalchemy import db
 from sqlalchemy import case, func
 from sqlmodel import select
@@ -63,6 +64,21 @@ async def update(statement_id: uuid.UUID, data: StatementUpdate) -> Statement:
 
 async def delete(statement_id: uuid.UUID) -> None:
     statement = await get_statement_by_id(statement_id)
+    if not statement:
+        raise HTTPException(status_code=404, detail="Manifesto não encontrado")
+
+    job_result = await db.session.execute(
+        select(Job).where(Job.statement_id == statement_id)
+    )
+    if job_result.scalars().first():
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Não é possível excluir um manifesto vinculado a um job. "
+                "Cancele o job para desfazer o vínculo."
+            ),
+        )
+
     await db.session.delete(statement)
     await db.session.commit()
 
