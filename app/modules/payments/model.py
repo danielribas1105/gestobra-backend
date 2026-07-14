@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 import uuid
-from sqlalchemy import Column, DateTime, Enum as SAEnum, String, func, text, Numeric
+from sqlalchemy import Column, DateTime, String, func, text
 from sqlmodel import Relationship, SQLModel, Field
 import enum
 
@@ -26,9 +26,9 @@ class Payment(SQLModel, table=True):
     job_id: uuid.UUID = Field(
         foreign_key="jobs.id", unique=True, nullable=False, index=True
     )
-    m3: int = Field(nullable=False)
-    value_m3: float = Field(nullable=False)  # snapshot do valor no momento do pagamento
-    total: float = Field(nullable=False)  # m3 × value_m3, calculado no service
+    total: float = Field(
+        nullable=False
+    )  # snapshot de job.value no momento do lançamento
     status: PaymentStatus = Field(
         default=PaymentStatus.PENDING,
         sa_column=Column(

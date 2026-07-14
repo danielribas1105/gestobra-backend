@@ -4,21 +4,30 @@ from pydantic import BaseModel, ConfigDict
 
 
 class MaterialCreate(BaseModel):
+    code: Optional[str] = None
     name: str
-    description: Optional[str] = None
-    value_m3: float
+    state: Optional[str] = None
+    material_class: Optional[str] = None
+    packaging: Optional[str] = None
+    technology: Optional[str] = None
 
 
 class MaterialUpdate(BaseModel):
+    code: Optional[str] = None
     name: Optional[str] = None
-    description: Optional[str] = None
-    value_m3: Optional[float] = None
+    state: Optional[str] = None
+    material_class: Optional[str] = None
+    packaging: Optional[str] = None
+    technology: Optional[str] = None
 
 
 class MaterialResponse(BaseModel):
     id: uuid.UUID
+    code: Optional[str] = None
     name: str
-    description: Optional[str] = None
-    value_m3: float
+    state: Optional[str] = None
+    material_class: Optional[str] = None
+    packaging: Optional[str] = None
+    technology: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)

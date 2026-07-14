@@ -14,8 +14,6 @@ from app.modules.payments.schema import (
     PaymentsTotalValues,
 )
 from app.modules.jobs.model import Job, JobStatus
-from app.modules.statements.model import Statement
-from app.modules.materials.model import Material
 
 
 async def list_payments(offset: int = 0, limit: int = 20) -> list[Payment]:
@@ -41,11 +39,13 @@ async def update(payment_id: uuid.UUID, data: PaymentUpdate) -> Payment:
 
 
 async def delete(payment_id: uuid.UUID) -> None:
-    payment = await get_payment_by_id(payment_id)
-    if not payment:
-        raise HTTPException(status_code=404, detail="Pagamento não encontrado")
-    await db.session.delete(payment)
-    await db.session.commit()
+    raise HTTPException(
+        status_code=400,
+        detail=(
+            "Pagamentos não podem ser excluídos. Para cancelar, altere o "
+            "status do job vinculado para 'cancelado'."
+        ),
+    )
 
 
 async def payments_total_values() -> PaymentsTotalValues:
@@ -91,7 +91,6 @@ async def payments_total_values() -> PaymentsTotalValues:
 
 
 async def generate_payment(job_id: uuid.UUID) -> Payment:
-    # Carrega o job com statement e material
     job = (
         (await db.session.execute(select(Job).where(Job.id == job_id)))
         .scalars()
@@ -104,33 +103,15 @@ async def generate_payment(job_id: uuid.UUID) -> Payment:
     if job.status != JobStatus.CONCLUDED:
         raise HTTPException(status_code=400, detail="Job ainda não concluído")
 
-    statement = (
-        (
-            await db.session.execute(
-                select(Statement).where(Statement.id == job.statement_id)
-            )
+    if not job.statement_id:
+        raise HTTPException(
+            status_code=400,
+            detail="Não é possível gerar pagamento sem um manifesto (MTR) vinculado ao job",
         )
-        .scalars()
-        .first()
-    )
-
-    material = (
-        (
-            await db.session.execute(
-                select(Material).where(Material.id == statement.material_id)
-            )
-        )
-        .scalars()
-        .first()
-    )
-
-    total = statement.m3 * material.value_m3
 
     payment = Payment(
         job_id=job_id,
-        m3=statement.m3,
-        value_m3=material.value_m3,
-        total=total,
+        total=job.value,
         status=PaymentStatus.PENDING,
     )
     db.session.add(payment)

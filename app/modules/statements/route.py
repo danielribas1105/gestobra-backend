@@ -16,7 +16,7 @@ router = APIRouter(prefix="/statements", tags=["Statements"])
 
 # 1. Rotas estáticas primeiro
 @router.get("/without-job", response_model=list[StatementResponse])
-async def list_statements(
+async def list_statements_without_job(
     offset: int = 0, limit: int = 20, user: User = Depends(get_current_user)
 ):
     return await service.list_statements_without_job(offset, limit)
@@ -39,7 +39,7 @@ async def get_statement_by_job(
 
 # 2. Rotas raiz
 @router.get("", response_model=list[StatementResponse])
-async def list_statements(
+async def list_all_statements(
     offset: int = 0, limit: int = 20, user: User = Depends(get_current_user)
 ):
     return await service.list_statements(offset, limit)
@@ -79,7 +79,4 @@ async def update_statement(
 async def delete_statement(
     statement_id: uuid.UUID, user: User = Depends(get_current_user)
 ):
-    statement = await service.get_statement_by_id(statement_id)
-    if not statement:
-        raise HTTPException(status_code=404, detail="Manifesto não encontrado")
     await service.delete(statement_id)

@@ -7,8 +7,6 @@ from app.modules.payments.model import PaymentStatus
 class PaymentResponse(BaseModel):
     id: uuid.UUID
     job_id: uuid.UUID
-    m3: int
-    value_m3: float
     total: float
     status: PaymentStatus
     created_at: datetime | None = None
@@ -18,8 +16,7 @@ class PaymentResponse(BaseModel):
 
 
 class PaymentUpdate(BaseModel):
-    m3: int | None = None
-    value_m3: float | None = None
+    total: float | None = None
     status: PaymentStatus | None = None
 
 

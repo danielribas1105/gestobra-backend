@@ -49,9 +49,9 @@ class Work(SQLModel, table=True):
     # Relationship
     jobs_origin: List["Job"] = Relationship(
         back_populates="origin_work",
-        sa_relationship_kwargs={"foreign_keys": "[Job.origin]"},
+        sa_relationship_kwargs={"foreign_keys": "[Job.origin_id]"},
     )
     jobs_destiny: List["Job"] = Relationship(
         back_populates="destiny_work",
-        sa_relationship_kwargs={"foreign_keys": "[Job.destiny]"},
+        sa_relationship_kwargs={"foreign_keys": "[Job.destiny_id]"},
     )

@@ -3,13 +3,19 @@ from typing import Optional
 import uuid
 from pydantic import BaseModel, ConfigDict
 
-from app.modules.jobs.model import JobStatus
+from app.modules.jobs.model import JobStatus, ValueType
 
 
 class JobCreate(BaseModel):
     statement_id: Optional[uuid.UUID] = None
-    origin: uuid.UUID
-    destiny: uuid.UUID
+    origin_id: uuid.UUID
+    destiny_id: uuid.UUID
+    material_id: uuid.UUID
+    quantity: float
+    unit: Optional[str] = None
+    value_type: ValueType = ValueType.PER_QUANTITY
+    rate: float
+    value: float
     car_id: uuid.UUID
     carrier_id: uuid.UUID
     driver_id: uuid.UUID
@@ -18,6 +24,12 @@ class JobCreate(BaseModel):
 
 class JobUpdate(BaseModel):
     statement_id: Optional[uuid.UUID] = None
+    material_id: Optional[uuid.UUID] = None
+    quantity: Optional[float] = None
+    unit: Optional[str] = None
+    value_type: Optional[ValueType] = None
+    rate: Optional[float] = None
+    value: Optional[float] = None
     driver_id: Optional[uuid.UUID] = None
     car_id: Optional[uuid.UUID] = None
     status: Optional[JobStatus] = None
@@ -26,8 +38,14 @@ class JobUpdate(BaseModel):
 class JobResponse(BaseModel):
     id: uuid.UUID
     statement_id: Optional[uuid.UUID] = None
-    origin: uuid.UUID
-    destiny: uuid.UUID
+    origin_id: uuid.UUID
+    destiny_id: uuid.UUID
+    material_id: uuid.UUID
+    quantity: float
+    unit: Optional[str] = None
+    value_type: Optional[str] = None
+    rate: float
+    value: float
     car_id: uuid.UUID
     carrier_id: uuid.UUID
     created_by: uuid.UUID
@@ -39,8 +57,6 @@ class JobResponse(BaseModel):
     # Campos resolvidos
     statement_code: Optional[str] = None
     material_name: Optional[str] = None
-    m3: Optional[int] = None
-    value_m3: Optional[float] = None
     origin_name: Optional[str] = None
     destiny_name: Optional[str] = None
     car_license: Optional[str] = None
