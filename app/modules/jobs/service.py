@@ -8,7 +8,7 @@ from sqlalchemy import case, func, select
 from sqlalchemy.orm import selectinload
 from app.modules.jobs.model import Job, JobStatus
 from app.modules.jobs.schema import JobCreate, JobUpdate, JobsCount
-from app.modules.statements.model import Statement
+from app.modules.statements.model import Statement, StatementStatus
 from app.modules.materials.model import Material
 from app.modules.payments.model import Payment, PaymentStatus
 
@@ -28,6 +28,7 @@ async def list_jobs(offset: int = 0, limit: int = 20) -> list[Job]:
         )
         .offset(offset)
         .limit(limit)
+        .order_by(Job.created_at.desc())
     )
     return result.scalars().all()
 
@@ -78,8 +79,9 @@ async def create_job(data: JobCreate, created_by: uuid.UUID) -> Job:
         db.session.add(payment)
 
     await db.session.commit()
-    await db.session.refresh(job)
-    return job
+
+    # 👇 recarrega já com todas as relações prontas, evitando lazy load depois
+    return await get_job_by_id(job.id)
 
 
 async def get_job_by_id(job_id: uuid.UUID) -> Job | None:
@@ -147,8 +149,8 @@ async def update(job_id: uuid.UUID, data: JobUpdate) -> Job:
         if not material:
             raise HTTPException(status_code=404, detail="Material não encontrado")
 
-    for field, value in update_data.items():
-        setattr(job, field, value)
+    for field in update_data:
+        setattr(job, field, getattr(data, field))
 
     existing_payment_result = await db.session.execute(
         select(Payment).where(Payment.job_id == job.id)
